@@ -36,6 +36,20 @@ import com.alibaba.cobar.parser.util.ListUtil;
  */
 public class PartitionByStringTest extends TestCase {
 
+    public void testMyFunction(){
+        TestFunction sut = new TestFunction(
+                "test   ",
+                (List<Expression>) ListUtil.createList(new PlaceHolder("test_id", "TEST_ID").setCacheEvalRst(false)));
+        sut.setCacheEvalRst(false);
+        sut.setAddValue(1);
+        sut.initialize();
+
+        Map<String, Object> map = new HashMap<String, Object>(1, 1);
+        map.put("TEST_ID", "12");
+        Integer v = (Integer) sut.evaluation(map);
+        Assert.assertEquals(v, new Integer(13));
+    }
+
     @SuppressWarnings("unchecked")
     public void testPartition() {
         PartitionByString sut = new PartitionByString(
