@@ -7,13 +7,12 @@ import com.alibaba.cobar.parser.ast.expression.primary.function.FunctionExpressi
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by hlr@superid.cn on 2014/9/1.
  */
 public class TestFunction extends FunctionExpression implements RuleAlgorithm {
-
-    private int addValue;
 
     public TestFunction(String functionName){
         super(functionName, null);
@@ -48,7 +47,6 @@ public class TestFunction extends FunctionExpression implements RuleAlgorithm {
             args.add((Expression) obj);
         }
         TestFunction testFunction = new TestFunction(functionName, args);
-        testFunction.addValue = addValue;
         return testFunction;
     }
 
@@ -60,7 +58,16 @@ public class TestFunction extends FunctionExpression implements RuleAlgorithm {
     @Override
     public Integer[] calculate(Map<? extends Object, ? extends Object> parameters) {
         System.out.println("TestFunction calculate");
-        Object arg = arguments.get(0).evaluation(parameters);
+        Object arg1 = arguments.get(0).evaluation(parameters);
+        Object arg2 = arguments.get(1).evaluation(parameters);
+        Number key1 = getNumber(arg1);
+        Number key2 = getNumber(arg2);
+        Integer[] rst = new Integer[1];
+        rst[0] = key1.intValue() + key2.intValue();
+        return rst;
+    }
+
+    private Number getNumber(Object arg){
         Number key;
         if (arg instanceof Number) {
             key = (Number) arg;
@@ -69,12 +76,7 @@ public class TestFunction extends FunctionExpression implements RuleAlgorithm {
         } else {
             throw new IllegalArgumentException("unsupported data type for partition key: " + arg.getClass());
         }
-        Integer[] rst = new Integer[1];
-        rst[0] = key.intValue() + addValue;
-        return rst;
+        return key;
     }
 
-    public void setAddValue(int addValue) {
-        this.addValue = addValue;
-    }
 }

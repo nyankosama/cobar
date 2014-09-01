@@ -39,15 +39,17 @@ public class PartitionByStringTest extends TestCase {
     public void testMyFunction(){
         TestFunction sut = new TestFunction(
                 "test   ",
-                (List<Expression>) ListUtil.createList(new PlaceHolder("test_id", "TEST_ID").setCacheEvalRst(false)));
+                (List<Expression>) ListUtil.createList(
+                        new PlaceHolder("user_id", "USER_ID").setCacheEvalRst(false),
+                        new PlaceHolder("account_id", "ACCOUNT_ID").setCacheEvalRst(false)));
         sut.setCacheEvalRst(false);
-        sut.setAddValue(1);
         sut.initialize();
 
-        Map<String, Object> map = new HashMap<String, Object>(1, 1);
-        map.put("TEST_ID", "12");
+        Map<String, Object> map = new HashMap<String, Object>(2, 1);
+        map.put("USER_ID", "1");
+        map.put("ACCOUNT_ID", "1");
         Integer v = (Integer) sut.evaluation(map);
-        Assert.assertEquals(v, new Integer(13));
+        Assert.assertEquals(v, new Integer(2));
     }
 
     @SuppressWarnings("unchecked")
