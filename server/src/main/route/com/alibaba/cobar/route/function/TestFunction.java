@@ -58,6 +58,7 @@ public class TestFunction extends FunctionExpression implements RuleAlgorithm {
     @Override
     public Integer[] calculate(Map<? extends Object, ? extends Object> parameters) {
         System.out.println("TestFunction calculate");
+        System.out.println("Map size =" + parameters.size());
         Object arg1 = arguments.get(0).evaluation(parameters);
         Object arg2 = arguments.get(1).evaluation(parameters);
         Number key1 = getNumber(arg1);
