@@ -36,6 +36,7 @@ set "JAVA_OPTS=%JAVA_OPTS% -XX:+CMSParallelRemarkEnabled"
 set "JAVA_OPTS=%JAVA_OPTS% -XX:+UseCMSCompactAtFullCollection"
 set "JAVA_OPTS=%JAVA_OPTS% -XX:+UseCMSInitiatingOccupancyOnly"
 set "JAVA_OPTS=%JAVA_OPTS% -XX:CMSInitiatingOccupancyFraction=75"
+set "JAVA_OPTS=%JAVA_OPTS% -Xdebug -Xrunjdwp:transport=dt_socket,address=8065,server=y,suspend=n"
 REM GC Log Options
 REM set "JAVA_OPTS=%JAVA_OPTS% -XX:+PrintGCApplicationStoppedTime"
 REM set "JAVA_OPTS=%JAVA_OPTS% -XX:+PrintGCTimeStamps"
@@ -55,12 +56,12 @@ echo ---------------------------------------------------
 goto end
 
 :okHome
-set "APP_VERSION=1.3.0"
+set "APP_VERSION=1.2.7"
 
 REM set COBAR_CLASSPATH
 set "COBAR_CLASSPATH=%COBAR_HOME%\conf;%COBAR_HOME%\lib\classes"
 set "COBAR_CLASSPATH=%COBAR_CLASSPATH%;%COBAR_HOME%\lib\cobar-server-%APP_VERSION%.jar"
-set "COBAR_CLASSPATH=%COBAR_CLASSPATH%;%COBAR_HOME%\lib\log4j-1.2.16.jar"
+set "COBAR_CLASSPATH=%COBAR_CLASSPATH%;%COBAR_HOME%\lib\log4j-1.2.17.jar"
 REM FOR %%I IN ("%COBAR_HOME%\lib\*.jar") DO (
 REM   set "COBAR_CLASSPATH=%COBAR_CLASSPATH%;%%I"
 REM )

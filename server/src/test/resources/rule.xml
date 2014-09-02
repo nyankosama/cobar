@@ -21,7 +21,7 @@
   <tableRule name="rule1">
     <rule>
       <columns>id</columns>
-      <algorithm><![CDATA[ func1(${id}) ]]></algorithm>
+        <algorithm><![CDATA[ func1(${id}) ]]></algorithm>
     </rule>
   </tableRule>
 

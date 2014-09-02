@@ -528,6 +528,8 @@ public final class ServerRouter {
         List<String> cols = rule.getColumns();
 
         Map<String, Object> parameter = new HashMap<String, Object>(cols.size(), 1);
+        //add by i@nyankosama.com
+        parameter.put("TABLE_NAME", matchedTable.getName());
         ArrayList<Iterator<Object>> colsValIter = new ArrayList<Iterator<Object>>(columnValues.size());
         for (String rc : cols) {
             List<Object> list = columnValues.get(rc);
