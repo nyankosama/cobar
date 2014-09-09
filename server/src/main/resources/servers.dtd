@@ -38,7 +38,8 @@
             <!ELEMENT tables (table+) >
                 <!ELEMENT table (table_name, split_columns, master_group, brother_group) >
                     <!ELEMENT table_name (#PCDATA) >
-                    <!ELEMENT split_columns (#PCDATA) >
+                    <!ELEMENT split_columns (column) >
+                        <!ELEMENT column (#PCDATA) >
                     <!ELEMENT master_group (#PCDATA) >
                     <!ELEMENT brother_group (#PCDATA) >
 

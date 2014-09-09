@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cluster SYSTEM "servers.dtd">
 <cluster>
     <groups>
         <group>
@@ -54,7 +55,15 @@
         <table>
             <table_name>user</table_name>
             <split_columns> <!-- 分表字段 -->
-                <column>id</column>
+                <column>user_id</column>
+            </split_columns>
+            <master_group>group1</master_group>
+            <brother_group>group1</brother_group>
+        </table>
+        <table>
+            <table_name>account</table_name>
+            <split_columns>
+                <column>account_id</column>
             </split_columns>
             <master_group>group1</master_group>
             <brother_group>group1</brother_group>

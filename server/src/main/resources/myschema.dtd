@@ -19,28 +19,28 @@
 
         <!ELEMENT schema (table*)>
         <!ATTLIST schema name NMTOKEN #REQUIRED>
-        <!ATTLIST schema dataNode CDATA #IMPLIED>
-        <!ATTLIST schema group CDATA #IMPLIED>
-        <!ATTLIST schema keepSqlSchema NMTOKEN #IMPLIED>
-        <!ELEMENT table (property*)>
-        <!ATTLIST table name CDATA #REQUIRED>
-        <!ATTLIST table dataNode CDATA #REQUIRED>
-        <!ATTLIST table rule NMTOKEN #IMPLIED>
-        <!ATTLIST table ruleRequired NMTOKEN #IMPLIED>
+        <!--<!ATTLIST schema dataNode CDATA #IMPLIED>-->
+        <!--<!ATTLIST schema group CDATA #IMPLIED>-->
+        <!--<!ATTLIST schema keepSqlSchema NMTOKEN #IMPLIED>-->
+        <!--<!ELEMENT table (property*)>-->
+        <!--<!ATTLIST table name CDATA #REQUIRED>-->
+        <!--<!ATTLIST table dataNode CDATA #REQUIRED>-->
+        <!--<!ATTLIST table rule NMTOKEN #IMPLIED>-->
+        <!--<!ATTLIST table ruleRequired NMTOKEN #IMPLIED>-->
 
-        <!ELEMENT dataNode (property+)>
-        <!ATTLIST dataNode name NMTOKEN #REQUIRED>
+        <!--<!ELEMENT dataNode (property+)>-->
+        <!--<!ATTLIST dataNode name NMTOKEN #REQUIRED>-->
 
-        <!ELEMENT dataSource (property+)>
-        <!ATTLIST dataSource name NMTOKEN #REQUIRED>
-        <!ATTLIST dataSource type NMTOKEN #REQUIRED>
+        <!--<!ELEMENT dataSource (property+)>-->
+        <!--<!ATTLIST dataSource name NMTOKEN #REQUIRED>-->
+        <!--<!ATTLIST dataSource type NMTOKEN #REQUIRED>-->
 
-        <!ELEMENT property ( #PCDATA | bean | dataSourceRef | location )*>
-        <!ATTLIST property name NMTOKEN #REQUIRED>
+        <!--<!ELEMENT property ( #PCDATA | bean | dataSourceRef | location )*>-->
+        <!--<!ATTLIST property name NMTOKEN #REQUIRED>-->
 
-        <!ELEMENT bean (property*)>
-        <!ATTLIST bean name NMTOKEN #IMPLIED>
-        <!ATTLIST bean class NMTOKEN #REQUIRED>
+        <!--<!ELEMENT bean (property*)>-->
+        <!--<!ATTLIST bean name NMTOKEN #IMPLIED>-->
+        <!--<!ATTLIST bean class NMTOKEN #REQUIRED>-->
 
-        <!ELEMENT dataSourceRef (#PCDATA)>
-        <!ELEMENT location (#PCDATA)>
+        <!--<!ELEMENT dataSourceRef (#PCDATA)>-->
+        <!--<!ELEMENT location (#PCDATA)>-->

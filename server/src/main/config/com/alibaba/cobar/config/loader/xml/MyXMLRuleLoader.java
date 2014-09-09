@@ -50,19 +50,19 @@ import com.alibaba.cobar.util.SplitUtil;
 public class MyXMLRuleLoader {
     private final static String DEFAULT_RULE_DTD = "/myrule.dtd";
     private final static String DEFAULT_RULE_XML = "/myrule.xml";
-    private final static String DEFAULT_SCHEMA_XML = "/myschema.xml";
-    private final static String DEFAULT_SCHEMA_DTD = "/myschema.dtd";
+    private final static String DEFAULT_SERVERS_XML = "/servers.xml";
+    private final static String DEFAULT_SERVERS_DTD = "/servers.dtd";
 
     private final Map<String, TableRuleConfig> tableRules;
     private final Set<RuleConfig> rules;
     private final Map<String, RuleAlgorithm> functions;
 
-    public MyXMLRuleLoader(String ruleFile, String schemaFile) {
+    public MyXMLRuleLoader(String ruleFile, String serversFile) {
         this.rules = new HashSet<RuleConfig>();
         this.tableRules = new HashMap<String, TableRuleConfig>();
         this.functions = new HashMap<String, RuleAlgorithm>();
         load(DEFAULT_RULE_DTD, ruleFile == null ? DEFAULT_RULE_XML : ruleFile,
-                DEFAULT_SCHEMA_DTD, schemaFile == null ? DEFAULT_SCHEMA_XML : schemaFile);
+                DEFAULT_SERVERS_DTD, serversFile == null ? DEFAULT_SERVERS_XML : serversFile);
     }
 
     public MyXMLRuleLoader() {
@@ -81,18 +81,18 @@ public class MyXMLRuleLoader {
         return (Map<String, RuleAlgorithm>) (functions.isEmpty() ? Collections.emptyMap() : functions);
     }
 
-    private void load(String ruleDtdFile, String ruleXmlFile, String schemaRuleFile, String schemaDtdFile) {
+    private void load(String ruleDtdFile, String ruleXmlFile, String serversDtdFile, String serversXmlFile) {
         InputStream ruleDtd = null;
         InputStream ruleXml = null;
-        InputStream schemaDtd = null;
-        InputStream schemaXml = null;
+        InputStream serversDtd = null;
+        InputStream serversXml = null;
         try {
             ruleDtd = XMLRuleLoader.class.getResourceAsStream(ruleDtdFile);
             ruleXml = XMLRuleLoader.class.getResourceAsStream(ruleXmlFile);
-            schemaDtd = XMLRuleLoader.class.getResourceAsStream(schemaRuleFile);
-            schemaXml = XMLRuleLoader.class.getResourceAsStream(schemaDtdFile);
+            serversDtd = XMLRuleLoader.class.getResourceAsStream(serversDtdFile);
+            serversXml = XMLRuleLoader.class.getResourceAsStream(serversXmlFile);
             Element ruleRoot = ConfigUtil.getDocument(ruleDtd, ruleXml).getDocumentElement();
-            Element schemaRoot = ConfigUtil.getDocument(schemaDtd, schemaXml).getDocumentElement();
+            Element schemaRoot = ConfigUtil.getDocument(serversDtd, serversXml).getDocumentElement();
             loadFunctions(ruleRoot);
             loadTableRules(ruleRoot, schemaRoot);
         } catch (ConfigException e) {
@@ -112,23 +112,23 @@ public class MyXMLRuleLoader {
                 } catch (IOException e) {
                 }
             }
-            if (schemaDtd != null) {
+            if (serversDtd != null) {
                 try {
-                    schemaDtd.close();
+                    serversDtd.close();
                 } catch (IOException e) {
                 }
             }
-            if (schemaXml != null) {
+            if (serversXml != null) {
                 try {
-                    schemaXml.close();
+                    serversXml.close();
                 } catch (IOException e) {
                 }
             }
         }
     }
 
-    private void loadTableRules(Element ruleRoot, Element schemaRoot) throws SQLSyntaxErrorException {
-        NodeList tableList = schemaRoot.getElementsByTagName("table");
+    private void loadTableRules(Element ruleRoot, Element serversRoot) throws SQLSyntaxErrorException {
+        NodeList tableList = serversRoot.getElementsByTagName("table");
         for (int i = 0, n = tableList.getLength(); i < n; ++i) {
             Node node = tableList.item(i);
             if (node instanceof Element) {
@@ -150,7 +150,8 @@ public class MyXMLRuleLoader {
         Element column = ConfigUtil.findFirstElementByTag(tableElement, "column");
         String[] columns = {column.getTextContent().toUpperCase()};
         String algorithm = ConfigUtil.findFirstElementByTag(ruleRoot, "algorithm").getTextContent();
-        algorithm.replaceFirst("\\$\\{column_id\\}", columns[0].toLowerCase());
+        String columnReplacement = "\\$\\{" + columns[0].toLowerCase() + "\\}";
+        algorithm = algorithm.replaceFirst("\\$\\{column_id\\}", columnReplacement);
 //        Element columnsEle = ConfigUtil.loadElement(element, "columns");
 //        String[] columns = SplitUtil.split(columnsEle.getTextContent(), ',', true);
 //        for (int i = 0; i < columns.length; ++i) {

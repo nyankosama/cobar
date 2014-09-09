@@ -14,7 +14,7 @@
  - See the License for the specific language governing permissions and
  - limitations under the License.
 -->
-<!DOCTYPE cobar:schema SYSTEM "schema.dtd">
+<!DOCTYPE cobar:schema SYSTEM "myschema.dtd">
 <cobar:schema xmlns:cobar="http://cobar.alibaba.com/">
     <!-- schema定义 -->
     <schema name="dbtest" />

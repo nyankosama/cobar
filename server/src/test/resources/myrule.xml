@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!--
  - Copyright 1999-2012 Alibaba Group.
  -
@@ -25,7 +25,8 @@
     </tableRule>
 
     <!-- 路由函数定义 -->
-    <function name="global_route_func" class="com.alibaba.cobar.route.function.PartitionByLong">
+    <function name="global_route_func"
+              class="com.alibaba.cobar.route.function.PartitionByLong">
         <property name="partitionCount">2</property>
         <property name="partitionLength">512</property>
     </function>
