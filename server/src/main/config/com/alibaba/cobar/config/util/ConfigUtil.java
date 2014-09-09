@@ -179,4 +179,12 @@ public class ConfigUtil {
         return bean;
     }
 
+    public static Element findFirstElementByTag(Element e, String tag){
+        NodeList nodeList = e.getElementsByTagName(tag);
+        if (nodeList.getLength() == 0)
+            return null;
+        else
+            return (Element) nodeList.item(0);
+    }
+
 }

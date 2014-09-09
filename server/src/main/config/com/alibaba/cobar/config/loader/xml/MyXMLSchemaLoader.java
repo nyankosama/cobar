@@ -48,7 +48,7 @@ import com.alibaba.cobar.util.SplitUtil;
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
  */
 @SuppressWarnings("unchecked")
-public class XMLSchemaLoader implements SchemaLoader {
+public class MyXMLSchemaLoader implements SchemaLoader {
     private final static String DEFAULT_DTD = "/schema.dtd";
     private final static String DEFAULT_XML = "/schema.xml";
 
@@ -59,7 +59,7 @@ public class XMLSchemaLoader implements SchemaLoader {
     private final Map<String, DataNodeConfig> dataNodes;
     private final Map<String, SchemaConfig> schemas;
 
-    public XMLSchemaLoader(String schemaFile, String ruleFile) {
+    public MyXMLSchemaLoader(String schemaFile, String ruleFile) {
         XMLRuleLoader ruleLoader = new XMLRuleLoader(ruleFile);
         this.rules = ruleLoader.listRuleConfig();
         this.tableRules = ruleLoader.getTableRules();
@@ -70,7 +70,7 @@ public class XMLSchemaLoader implements SchemaLoader {
         this.load(DEFAULT_DTD, schemaFile == null ? DEFAULT_XML : schemaFile);
     }
 
-    public XMLSchemaLoader() {
+    public MyXMLSchemaLoader() {
         this(null, null);
     }
 
@@ -245,12 +245,12 @@ public class XMLSchemaLoader implements SchemaLoader {
                     ParameterMapping.mapping(conf, ConfigUtil.loadElements(element));
                     confList.add(conf);
                     switch (k) {
-                    case 0:
-                        conf.setName((limit == 1) ? dnNamePrefix : dnNamePrefix + "[" + k + "]");
-                        break;
-                    default:
-                        conf.setName(dnNamePrefix + "[" + k + "]");
-                        break;
+                        case 0:
+                            conf.setName((limit == 1) ? dnNamePrefix : dnNamePrefix + "[" + k + "]");
+                            break;
+                        default:
+                            conf.setName(dnNamePrefix + "[" + k + "]");
+                            break;
                     }
                     conf.setDataSource(dsString.toString());
                 }
@@ -294,13 +294,13 @@ public class XMLSchemaLoader implements SchemaLoader {
                         ParameterMapping.mapping(dsConf, ConfigUtil.loadElements(element));
                         dscList.add(dsConf);
                         switch (dsIndex) {
-                        case 0:
-                            dsConf.setName(dsNamePrefix);
-                            break;
-                        case 1:
-                            dscList.get(0).setName(dsNamePrefix + "[0]");
-                        default:
-                            dsConf.setName(dsNamePrefix + "[" + dsIndex + "]");
+                            case 0:
+                                dsConf.setName(dsNamePrefix);
+                                break;
+                            case 1:
+                                dscList.get(0).setName(dsNamePrefix + "[0]");
+                            default:
+                                dsConf.setName(dsNamePrefix + "[" + dsIndex + "]");
                         }
                         dsConf.setType(dsType);
                         dsConf.setDatabase(dsSchema);
