@@ -49,8 +49,12 @@ import com.alibaba.cobar.util.SplitUtil;
  */
 @SuppressWarnings("unchecked")
 public class MyXMLSchemaLoader implements SchemaLoader {
-    private final static String DEFAULT_DTD = "/schema.dtd";
-    private final static String DEFAULT_XML = "/schema.xml";
+    private final static String DEFAULT_SCHEMA_DTD = "/myschema.dtd";
+    private final static String DEFAULT_SCHEMA_XML = "/myschema.xml";
+    private final static String DEFAULT_SERVERS_DTD = "/servers.dtd";
+    private final static String DEFAULT_SERVERS_XML = "/servers.xml";
+    private final static String DEFAULT_RULE_DTD = "/myrule.dtd";
+    private final static String DEFAULT_RULE_XML = "/myrule.xml";
 
     private final Map<String, TableRuleConfig> tableRules;
     private final Set<RuleConfig> rules;
@@ -59,8 +63,8 @@ public class MyXMLSchemaLoader implements SchemaLoader {
     private final Map<String, DataNodeConfig> dataNodes;
     private final Map<String, SchemaConfig> schemas;
 
-    public MyXMLSchemaLoader(String schemaFile, String ruleFile) {
-        XMLRuleLoader ruleLoader = new XMLRuleLoader(ruleFile);
+    public MyXMLSchemaLoader(String schemaFile, String ruleFile, String serversFile) {
+        MyXMLRuleLoader ruleLoader = new MyXMLRuleLoader(ruleFile, serversFile);
         this.rules = ruleLoader.listRuleConfig();
         this.tableRules = ruleLoader.getTableRules();
         this.functions = ruleLoader.getFunctions();
@@ -71,7 +75,7 @@ public class MyXMLSchemaLoader implements SchemaLoader {
     }
 
     public MyXMLSchemaLoader() {
-        this(null, null);
+        this(null, null, null);
     }
 
     @Override
@@ -104,14 +108,20 @@ public class MyXMLSchemaLoader implements SchemaLoader {
         return rules;
     }
 
-    private void load(String dtdFile, String xmlFile) {
-        InputStream dtd = null;
-        InputStream xml = null;
+    private void load(String schemaDtdFile, String schemaXmlFile,
+                      String serversDtdFile, String serversXmlFile) {
+        InputStream schemaDtd = null;
+        InputStream schemaXml = null;
+        InputStream serversDtd = null;
+        InputStream serversXml = null;
         try {
-            dtd = XMLSchemaLoader.class.getResourceAsStream(dtdFile);
-            xml = XMLSchemaLoader.class.getResourceAsStream(xmlFile);
-            Element root = ConfigUtil.getDocument(dtd, xml).getDocumentElement();
-            loadDataSources(root);
+            schemaDtd = XMLSchemaLoader.class.getResourceAsStream(schemaDtdFile);
+            schemaXml = XMLSchemaLoader.class.getResourceAsStream(schemaXmlFile);
+            serversDtd = XMLSchemaLoader.class.getResourceAsStream(serversDtdFile);
+            serversXml = XMLSchemaLoader.class.getResourceAsStream(serversXmlFile);
+            Element schemaRoot = ConfigUtil.getDocument(schemaDtd, schemaXml).getDocumentElement();
+            Element serversRoot = ConfigUtil.getDocument(serversDtd, serversXml).getDocumentElement();
+            loadDataSources(serversRoot);
             loadDataNodes(root);
             loadSchemas(root);
         } catch (ConfigException e) {
@@ -312,6 +322,7 @@ public class MyXMLSchemaLoader implements SchemaLoader {
             } catch (Exception e) {
                 throw new ConfigException("dataSource " + dsNamePrefix + " define error", e);
             }
+
             for (DataSourceConfig dsConf : dscList) {
                 if (dataSources.containsKey(dsConf.getName())) {
                     throw new ConfigException("dataSource name " + dsConf.getName() + "duplicated!");
