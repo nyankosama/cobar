@@ -187,4 +187,11 @@ public class ConfigUtil {
             return (Element) nodeList.item(0);
     }
 
+    public static String getFirstContentByTag(Element e, String tag){
+        NodeList list = e.getElementsByTagName(tag);
+        if (list.getLength() == 0)
+            return null;
+        return list.item(0).getTextContent();
+    }
+
 }

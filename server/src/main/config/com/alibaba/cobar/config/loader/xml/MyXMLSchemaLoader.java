@@ -18,19 +18,6 @@
  */
 package com.alibaba.cobar.config.loader.xml;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import com.alibaba.cobar.config.loader.SchemaLoader;
 import com.alibaba.cobar.config.model.DataNodeConfig;
 import com.alibaba.cobar.config.model.DataSourceConfig;
@@ -41,8 +28,14 @@ import com.alibaba.cobar.config.model.rule.RuleConfig;
 import com.alibaba.cobar.config.model.rule.TableRuleConfig;
 import com.alibaba.cobar.config.util.ConfigException;
 import com.alibaba.cobar.config.util.ConfigUtil;
-import com.alibaba.cobar.config.util.ParameterMapping;
 import com.alibaba.cobar.util.SplitUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 /**
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
@@ -53,8 +46,13 @@ public class MyXMLSchemaLoader implements SchemaLoader {
     private final static String DEFAULT_SCHEMA_XML = "/myschema.xml";
     private final static String DEFAULT_SERVERS_DTD = "/servers.dtd";
     private final static String DEFAULT_SERVERS_XML = "/servers.xml";
-    private final static String DEFAULT_RULE_DTD = "/myrule.dtd";
-    private final static String DEFAULT_RULE_XML = "/myrule.xml";
+    private final static String DEFAULT_DS_TYPE = "mysql";
+    private final static String DEFAULT_SQL_MODE = "STRICT_TRANS_TABLES";
+    private final static String DEFAULT_HEARTBEAT_SQL = "SELECT 1";
+    private final static String DEFAULT_SCHEMA_DATA_NODE = "";
+    private final static String DEFAULT_SCHEMA_GROUP= "default";
+    private final static String DEFAULT_RULE = "global_rule";
+
 
     private final Map<String, TableRuleConfig> tableRules;
     private final Set<RuleConfig> rules;
@@ -62,6 +60,10 @@ public class MyXMLSchemaLoader implements SchemaLoader {
     private final Map<String, DataSourceConfig> dataSources;
     private final Map<String, DataNodeConfig> dataNodes;
     private final Map<String, SchemaConfig> schemas;
+
+    private final Map<String, List<DataSourceConfig>> groupDsMap; // groupName => dataSourceConfigList
+    private final Map<String, List<DataNodeConfig>> tableNameDataNodeMap; // tableName => dataNodeConfigList
+    private final Map<String, Integer[]> tableIndexMap; //从tableName => (id, dataNodeIndex) => dataNodeIndex
 
     public MyXMLSchemaLoader(String schemaFile, String ruleFile, String serversFile) {
         MyXMLRuleLoader ruleLoader = new MyXMLRuleLoader(ruleFile, serversFile);
@@ -71,7 +73,11 @@ public class MyXMLSchemaLoader implements SchemaLoader {
         this.dataSources = new HashMap<String, DataSourceConfig>();
         this.dataNodes = new HashMap<String, DataNodeConfig>();
         this.schemas = new HashMap<String, SchemaConfig>();
-        this.load(DEFAULT_DTD, schemaFile == null ? DEFAULT_XML : schemaFile);
+        this.groupDsMap = new HashMap<String, List<DataSourceConfig>>();
+        this.tableNameDataNodeMap = new HashMap<String, List<DataNodeConfig>>();
+        this.tableIndexMap = new HashMap<String, Integer[]>();
+        this.load(DEFAULT_SCHEMA_DTD, schemaFile == null ? DEFAULT_SCHEMA_XML : schemaFile,
+                  DEFAULT_SERVERS_DTD, serversFile == null ? DEFAULT_SERVERS_XML : serversFile);
     }
 
     public MyXMLSchemaLoader() {
@@ -122,54 +128,68 @@ public class MyXMLSchemaLoader implements SchemaLoader {
             Element schemaRoot = ConfigUtil.getDocument(schemaDtd, schemaXml).getDocumentElement();
             Element serversRoot = ConfigUtil.getDocument(serversDtd, serversXml).getDocumentElement();
             loadDataSources(serversRoot);
-            loadDataNodes(root);
-            loadSchemas(root);
+            loadDataNodes(serversRoot);
+            loadSchemas(schemaRoot);
         } catch (ConfigException e) {
             throw e;
         } catch (Throwable e) {
             throw new ConfigException(e);
         } finally {
-            if (dtd != null) {
+            if (schemaDtd != null) {
                 try {
-                    dtd.close();
+                    schemaDtd.close();
                 } catch (IOException e) {
                 }
             }
-            if (xml != null) {
+            if (schemaXml != null) {
                 try {
-                    xml.close();
+                    schemaXml.close();
+                } catch (IOException e) {
+                }
+            }
+            if (serversDtd != null) {
+                try {
+                    serversDtd.close();
+                } catch (IOException e) {
+                }
+            }
+            if (serversXml != null) {
+                try {
+                    serversXml.close();
                 } catch (IOException e) {
                 }
             }
         }
     }
 
-    private void loadSchemas(Element root) {
-        NodeList list = root.getElementsByTagName("schema");
-        for (int i = 0, n = list.getLength(); i < n; i++) {
-            Element schemaElement = (Element) list.item(i);
-            String name = schemaElement.getAttribute("name");
-            String dataNode = schemaElement.getAttribute("dataNode");
-            // 在非空的情况下检查dataNode是否存在
-            if (dataNode != null && dataNode.length() != 0) {
-                checkDataNodeExists(dataNode);
-            } else {
-                dataNode = "";// 确保非空
-            }
-            String group = "default";
-            if (schemaElement.hasAttribute("group")) {
-                group = schemaElement.getAttribute("group").trim();
-            }
-            Map<String, TableConfig> tables = loadTables(schemaElement);
-            if (schemas.containsKey(name)) {
-                throw new ConfigException("schema " + name + " duplicated!");
-            }
-            boolean keepSqlSchema = false;
-            if (schemaElement.hasAttribute("keepSqlSchema")) {
-                keepSqlSchema = Boolean.parseBoolean(schemaElement.getAttribute("keepSqlSchema").trim());
-            }
-            schemas.put(name, new SchemaConfig(name, dataNode, group, keepSqlSchema, tables));
+    private void loadSchemas(Element schemaRoot) {
+        String schemaName = ConfigUtil.findFirstElementByTag(schemaRoot, "schema").getAttribute("name");
+        String dataNode = DEFAULT_SCHEMA_DATA_NODE;
+        String group = DEFAULT_SCHEMA_GROUP;
+        Map<String, TableConfig> tables = loadTables();
+        boolean keepSqlSchema = false;
+        schemas.put(schemaName, new SchemaConfig(schemaName, dataNode, group, keepSqlSchema, tables));
+    }
+
+    private String generateTableDataNodeStr(List<DataNodeConfig> configs, String tableName){
+        if (configs.size() == 1){
+            return tableName + "_dn[0]";
+        }else{
+            return tableName + "_dn$0-" + configs.size();
         }
+    }
+
+    private Map<String, TableConfig> loadTables(){
+        Map<String, TableConfig> tables = new HashMap<String, TableConfig>();
+        for (Map.Entry<String, List<DataNodeConfig>> entry : tableNameDataNodeMap.entrySet()){
+            String name = entry.getKey().toUpperCase();
+            String dataNode = generateTableDataNodeStr(entry.getValue(), entry.getKey());
+            TableRuleConfig tableRule = tableRules.get(DEFAULT_RULE);
+            boolean ruleRequired = false;
+            TableConfig table = new TableConfig(name, dataNode, tableRule, ruleRequired);
+            tables.put(table.getName(), table);
+        }
+        return tables;
     }
 
     private Map<String, TableConfig> loadTables(Element node) {
@@ -217,133 +237,124 @@ public class MyXMLSchemaLoader implements SchemaLoader {
     }
 
     private void loadDataNodes(Element root) {
-        NodeList list = root.getElementsByTagName("dataNode");
-        for (int i = 0, n = list.getLength(); i < n; i++) {
-            Element element = (Element) list.item(i);
-            String dnNamePrefix = element.getAttribute("name");
-            List<DataNodeConfig> confList = new ArrayList<DataNodeConfig>();
-            try {
-                Element dsElement = findPropertyByName(element, "dataSource");
-                if (dsElement == null) {
-                    throw new NullPointerException("dataNode xml Element with name of " + dnNamePrefix
-                            + " has no dataSource Element");
-                }
-                NodeList dataSourceList = dsElement.getElementsByTagName("dataSourceRef");
-                String dataSources[][] = new String[dataSourceList.getLength()][];
-                for (int j = 0, m = dataSourceList.getLength(); j < m; ++j) {
-                    Element ref = (Element) dataSourceList.item(j);
-                    String dsString = ref.getTextContent();
-                    dataSources[j] = SplitUtil.split(dsString, ',', '$', '-', '[', ']');
-                }
-                if (dataSources.length <= 0) {
-                    throw new ConfigException("no dataSourceRef defined!");
-                }
-                for (String[] dss : dataSources) {
-                    if (dss.length != dataSources[0].length) {
-                        throw new ConfigException("dataSource number not equals!");
-                    }
-                }
-                for (int k = 0, limit = dataSources[0].length; k < limit; ++k) {
-                    StringBuilder dsString = new StringBuilder();
-                    for (int dsIndex = 0; dsIndex < dataSources.length; ++dsIndex) {
-                        if (dsIndex > 0) {
-                            dsString.append(',');
-                        }
-                        dsString.append(dataSources[dsIndex][k]);
-                    }
-                    DataNodeConfig conf = new DataNodeConfig();
-                    ParameterMapping.mapping(conf, ConfigUtil.loadElements(element));
-                    confList.add(conf);
-                    switch (k) {
-                        case 0:
-                            conf.setName((limit == 1) ? dnNamePrefix : dnNamePrefix + "[" + k + "]");
-                            break;
-                        default:
-                            conf.setName(dnNamePrefix + "[" + k + "]");
-                            break;
-                    }
-                    conf.setDataSource(dsString.toString());
-                }
-            } catch (Exception e) {
-                throw new ConfigException("dataNode " + dnNamePrefix + " define error", e);
+        NodeList tableList = root.getElementsByTagName("table");
+        List<DataNodeConfig> configList = new ArrayList<DataNodeConfig>();
+        for (int i = 0; i < tableList.getLength(); i++){
+            Element tableElement = (Element) tableList.item(i);
+            String tableName = ConfigUtil.getFirstContentByTag(tableElement, "table_name");
+            String dataNodeName = tableName + "_dn";
+            String masterGroupName = ConfigUtil.getFirstContentByTag(tableElement, "master_group");
+            tableElement.getElementsByTagName("brother_group");
+            String brotherGroupName = ConfigUtil.getFirstContentByTag(tableElement, "brother_group");
+            List<DataSourceConfig> masterDsConfigs = groupDsMap.get(masterGroupName);
+            List<DataSourceConfig> brotherDsConfigs = null;
+            List<DataNodeConfig> tableDataNodeList = new ArrayList<DataNodeConfig>();
+            if (hasBrotherGroupConfig(tableElement)){
+                brotherDsConfigs = groupDsMap.get(brotherGroupName);
             }
 
-            for (DataNodeConfig conf : confList) {
-                if (dataNodes.containsKey(conf.getName())) {
-                    throw new ConfigException("dataNode " + conf.getName() + " duplicated!");
-                }
-                dataNodes.put(conf.getName(), conf);
+            if (brotherDsConfigs != null && masterDsConfigs.size() != brotherDsConfigs.size()){
+                throw new ConfigException("masterGroup brotherGroup server number not equals!");
             }
+            for (int k = 0; k < masterDsConfigs.size(); k++){
+                DataNodeConfig nodeConfig = new DataNodeConfig();
+                StringBuilder dsString = new StringBuilder();
+                if (brotherDsConfigs == null){
+                    dsString.append(masterDsConfigs.get(k).getName());
+                }else{
+                    dsString.append(masterDsConfigs.get(k).getName());
+                    dsString.append(",");
+                    dsString.append(brotherDsConfigs.get(k).getName());
+                }
+                nodeConfig.setName(dataNodeName + "[" + k + "]");
+                nodeConfig.setDataSource(dsString.toString());
+                nodeConfig.setHeartbeatSQL(DEFAULT_HEARTBEAT_SQL);
+                configList.add(nodeConfig);
+                tableDataNodeList.add(nodeConfig);
+            }
+            tableNameDataNodeMap.put(tableName, tableDataNodeList);
+        }
+
+        for (DataNodeConfig conf : configList) {
+            if (dataNodes.containsKey(conf.getName())) {
+                throw new ConfigException("dataNode " + conf.getName() + " duplicated!");
+            }
+            dataNodes.put(conf.getName(), conf);
         }
     }
 
     private void loadDataSources(Element root) {
-        NodeList list = root.getElementsByTagName("dataSource");
-        for (int i = 0, n = list.getLength(); i < n; ++i) {
-            Element element = (Element) list.item(i);
-            ArrayList<DataSourceConfig> dscList = new ArrayList<DataSourceConfig>();
-            String dsNamePrefix = element.getAttribute("name");
+        NodeList groupList = root.getElementsByTagName("group");
+        List<DataSourceConfig> dscList = new ArrayList<DataSourceConfig>();
+        Map<String, Integer> dsNameIndexMap = new HashMap<String, Integer>();
+
+        for (int k = 0; k < groupList.getLength(); k++){
+            Element groupEle = (Element) groupList.item(k);
+            String groupName = ConfigUtil.getFirstContentByTag(groupEle, "name");
+            //TODO 这里暂时忽略migrations
+            NodeList serverList = groupEle.getElementsByTagName("server");
+            if (serverList.getLength() == 0){
+                throw new ConfigException("the size of servers in group can not be zero!");
+            }
+            String slashName = new String();
+            List<DataSourceConfig> groupDsList = new ArrayList<DataSourceConfig>();
             try {
-                String dsType = element.getAttribute("type");
-                Element locElement = findPropertyByName(element, "location");
-                if (locElement == null) {
-                    throw new NullPointerException("dataSource xml Element with name of " + dsNamePrefix
-                            + " has no location Element");
-                }
-                NodeList locationList = locElement.getElementsByTagName("location");
-                int dsIndex = 0;
-                for (int j = 0, m = locationList.getLength(); j < m; ++j) {
-                    String locStr = ((Element) locationList.item(j)).getTextContent();
-                    int colonIndex = locStr.indexOf(':');
-                    int slashIndex = locStr.indexOf('/');
-                    String dsHost = locStr.substring(0, colonIndex).trim();
-                    int dsPort = Integer.parseInt(locStr.substring(colonIndex + 1, slashIndex).trim());
-                    String[] schemas = SplitUtil.split(locStr.substring(slashIndex + 1).trim(), ',', '$', '-');
-                    for (String dsSchema : schemas) {
-                        DataSourceConfig dsConf = new DataSourceConfig();
-                        ParameterMapping.mapping(dsConf, ConfigUtil.loadElements(element));
-                        dscList.add(dsConf);
-                        switch (dsIndex) {
-                            case 0:
-                                dsConf.setName(dsNamePrefix);
-                                break;
-                            case 1:
-                                dscList.get(0).setName(dsNamePrefix + "[0]");
-                            default:
-                                dsConf.setName(dsNamePrefix + "[" + dsIndex + "]");
-                        }
-                        dsConf.setType(dsType);
-                        dsConf.setDatabase(dsSchema);
-                        dsConf.setHost(dsHost);
-                        dsConf.setPort(dsPort);
-                        ++dsIndex;
-                    }
-                }
-            } catch (Exception e) {
-                throw new ConfigException("dataSource " + dsNamePrefix + " define error", e);
-            }
+                for (int i = 0; i < serverList.getLength(); i++ ){
+                    Element element = (Element) serverList.item(i);
+                    int id = Integer.parseInt(ConfigUtil.getFirstContentByTag(element, "id"));
+                    String host = ConfigUtil.getFirstContentByTag(element, "host");
+                    int port = Integer.parseInt(ConfigUtil.getFirstContentByTag(element, "port"));
+                    slashName = ConfigUtil.getFirstContentByTag(element, "ds_name");
+                    String user = ConfigUtil.getFirstContentByTag(element, "user");
+                    String password = ConfigUtil.getFirstContentByTag(element, "password");
 
-            for (DataSourceConfig dsConf : dscList) {
-                if (dataSources.containsKey(dsConf.getName())) {
-                    throw new ConfigException("dataSource name " + dsConf.getName() + "duplicated!");
+                    setDsNameIndex(dsNameIndexMap, slashName);
+                    final int nameIndex = getDsNameIndex(dsNameIndexMap, slashName);
+                    //TODO 后期会支持name$0-xxx这种写法，需要对相关属性字符串进行解析
+                    DataSourceConfig config = new DataSourceConfig();
+                    config.setName(slashName + "_ds" + "[" + nameIndex + "]");
+                    config.setType(DEFAULT_DS_TYPE);
+                    config.setHost(host);
+                    config.setPort(port);
+                    config.setUser(user);
+                    config.setPassword(password);
+                    config.setDatabase(slashName);
+                    config.setSqlMode(DEFAULT_SQL_MODE);
+                    dscList.add(config);
+                    groupDsList.add(config);
                 }
-                dataSources.put(dsConf.getName(), dsConf);
+                if (groupDsList.size() != 0){
+                    groupDsMap.put(groupName, groupDsList); // 确保不为0
+                }
+            }catch (Exception e){
+                throw new ConfigException("dataSource " + slashName + " define error", e);
             }
+        }
+
+        for (DataSourceConfig dsConf : dscList) {
+            if (dataSources.containsKey(dsConf.getName())) {
+                throw new ConfigException("dataSource name " + dsConf.getName() + "duplicated!");
+            }
+            dataSources.put(dsConf.getName(), dsConf);
         }
     }
 
-    private static Element findPropertyByName(Element bean, String name) {
-        NodeList propertyList = bean.getElementsByTagName("property");
-        for (int j = 0, m = propertyList.getLength(); j < m; ++j) {
-            Node node = propertyList.item(j);
-            if (node instanceof Element) {
-                Element p = (Element) node;
-                if (name.equals(p.getAttribute("name"))) {
-                    return p;
-                }
-            }
-        }
-        return null;
+    private boolean hasBrotherGroupConfig(Element tableElement){
+        return tableElement.getElementsByTagName("brother_group").getLength() == 0 ? false : true;
     }
 
+    private int getDsNameIndex(Map<String, Integer> dsNameIndexMap, String name){
+        if (dsNameIndexMap.containsKey(name)){
+            return dsNameIndexMap.get(name);
+        }
+        return 0;
+    }
+
+    private void setDsNameIndex(Map<String, Integer> dsNameIndexMap, String name){
+        if (dsNameIndexMap.containsKey(name)){
+            dsNameIndexMap.put(name, dsNameIndexMap.get(name) + 1);
+        }else{
+            dsNameIndexMap.put(name, 0);
+        }
+    }
 }

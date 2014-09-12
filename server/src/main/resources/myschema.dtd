@@ -17,7 +17,7 @@
         <!ELEMENT cobar:schema (schema*,dataNode*,dataSource*)>
         <!ATTLIST cobar:schema xmlns:cobar CDATA #FIXED "http://cobar.alibaba.com/">
 
-        <!ELEMENT schema (table*)>
+        <!ELEMENT schema ()>
         <!ATTLIST schema name NMTOKEN #REQUIRED>
         <!--<!ATTLIST schema dataNode CDATA #IMPLIED>-->
         <!--<!ATTLIST schema group CDATA #IMPLIED>-->
