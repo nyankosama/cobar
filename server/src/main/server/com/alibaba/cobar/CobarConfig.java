@@ -46,6 +46,7 @@ public class CobarConfig {
     private volatile Map<String, MySQLDataNode> _dataNodes;
     private volatile Map<String, DataSourceConfig> dataSources;
     private volatile Map<String, DataSourceConfig> _dataSources;
+    private volatile Map<String, Map<Integer, Integer>> routeTableIndex;
     private long reloadTime;
     private long rollbackTime;
     private int status;
@@ -60,6 +61,7 @@ public class CobarConfig {
         this.dataNodes = confInit.getDataNodes();
         this.quarantine = confInit.getQuarantine();
         this.cluster = confInit.getCluster();
+        this.routeTableIndex = confInit.getRouteTableIndex();
 
         this.reloadTime = TimeUtil.currentTimeMillis();
         this.rollbackTime = -1L;
@@ -129,6 +131,10 @@ public class CobarConfig {
 
     public long getRollbackTime() {
         return rollbackTime;
+    }
+
+    public Map<String, Map<Integer, Integer>> getRouteTableIndex() {
+        return routeTableIndex;
     }
 
     public void reload(Map<String, UserConfig> users, Map<String, SchemaConfig> schemas,

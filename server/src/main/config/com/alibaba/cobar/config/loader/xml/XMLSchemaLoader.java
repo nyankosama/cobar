@@ -104,6 +104,11 @@ public class XMLSchemaLoader implements SchemaLoader {
         return rules;
     }
 
+    @Override
+    public Map<String, Map<Integer, Integer>> getTableIndex() {
+        return null;
+    }
+
     private void load(String dtdFile, String xmlFile) {
         InputStream dtd = null;
         InputStream xml = null;

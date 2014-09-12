@@ -14,10 +14,10 @@
          - See the License for the specific language governing permissions and
          - limitations under the License.
         -->
-        <!ELEMENT cobar:schema (schema*,dataNode*,dataSource*)>
+        <!ELEMENT cobar:schema (schema*)>
         <!ATTLIST cobar:schema xmlns:cobar CDATA #FIXED "http://cobar.alibaba.com/">
 
-        <!ELEMENT schema ()>
+        <!ELEMENT schema (property*)>
         <!ATTLIST schema name NMTOKEN #REQUIRED>
         <!--<!ATTLIST schema dataNode CDATA #IMPLIED>-->
         <!--<!ATTLIST schema group CDATA #IMPLIED>-->
@@ -35,12 +35,12 @@
         <!--<!ATTLIST dataSource name NMTOKEN #REQUIRED>-->
         <!--<!ATTLIST dataSource type NMTOKEN #REQUIRED>-->
 
-        <!--<!ELEMENT property ( #PCDATA | bean | dataSourceRef | location )*>-->
-        <!--<!ATTLIST property name NMTOKEN #REQUIRED>-->
+        <!ELEMENT property ( #PCDATA | bean | dataSourceRef | location )*>
+        <!ATTLIST property name NMTOKEN #REQUIRED>
 
-        <!--<!ELEMENT bean (property*)>-->
-        <!--<!ATTLIST bean name NMTOKEN #IMPLIED>-->
-        <!--<!ATTLIST bean class NMTOKEN #REQUIRED>-->
+        <!ELEMENT bean (property*)>
+        <!ATTLIST bean name NMTOKEN #IMPLIED>
+        <!ATTLIST bean class NMTOKEN #REQUIRED>
 
-        <!--<!ELEMENT dataSourceRef (#PCDATA)>-->
-        <!--<!ELEMENT location (#PCDATA)>-->
+        <!ELEMENT dataSourceRef (#PCDATA)>
+        <!ELEMENT location (#PCDATA)>

@@ -43,4 +43,6 @@ public interface SchemaLoader {
     Map<String, SchemaConfig> getSchemas();
 
     Set<RuleConfig> listRuleConfig();
+
+    Map<String, Map<Integer, Integer>> getTableIndex();
 }

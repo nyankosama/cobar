@@ -25,6 +25,7 @@ import java.util.Set;
 
 import com.alibaba.cobar.config.loader.ConfigLoader;
 import com.alibaba.cobar.config.loader.SchemaLoader;
+import com.alibaba.cobar.config.loader.xml.MyXMLSchemaLoader;
 import com.alibaba.cobar.config.loader.xml.XMLConfigLoader;
 import com.alibaba.cobar.config.loader.xml.XMLSchemaLoader;
 import com.alibaba.cobar.config.model.DataNodeConfig;
@@ -50,9 +51,10 @@ public class ConfigInitializer {
     private volatile Map<String, SchemaConfig> schemas;
     private volatile Map<String, MySQLDataNode> dataNodes;
     private volatile Map<String, DataSourceConfig> dataSources;
+    private volatile Map<String, Map<Integer, Integer>> routeTableIndex;
 
     public ConfigInitializer() {
-        SchemaLoader schemaLoader = new XMLSchemaLoader();
+        SchemaLoader schemaLoader = new MyXMLSchemaLoader();
         XMLConfigLoader configLoader = new XMLConfigLoader(schemaLoader);
         try {
             RouteRuleInitializer.initRouteRule(schemaLoader);
@@ -67,7 +69,7 @@ public class ConfigInitializer {
         this.dataNodes = initDataNodes(configLoader);
         this.quarantine = configLoader.getQuarantineConfig();
         this.cluster = initCobarCluster(configLoader);
-
+        this.routeTableIndex = schemaLoader.getTableIndex();
         this.checkConfig();
     }
 
@@ -127,6 +129,10 @@ public class ConfigInitializer {
 
     public Map<String, DataSourceConfig> getDataSources() {
         return dataSources;
+    }
+
+    public Map<String, Map<Integer, Integer>> getRouteTableIndex() {
+        return routeTableIndex;
     }
 
     private CobarCluster initCobarCluster(ConfigLoader configLoader) {

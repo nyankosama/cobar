@@ -133,7 +133,8 @@ public class MyXMLRuleLoader {
             Node node = tableList.item(i);
             if (node instanceof Element) {
                 Element tableEle = (Element) node;
-                String name = ConfigUtil.findFirstElementByTag(tableEle, "table_name").getTextContent();
+                String tableName = ConfigUtil.getFirstContentByTag(tableEle, "table_name");
+                String name = tableName + "_rule";
                 if (tableRules.containsKey(name)) {
                     throw new ConfigException("table rule " + name + " duplicated!");
                 }

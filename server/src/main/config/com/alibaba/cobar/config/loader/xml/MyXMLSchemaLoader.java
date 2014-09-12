@@ -51,7 +51,6 @@ public class MyXMLSchemaLoader implements SchemaLoader {
     private final static String DEFAULT_HEARTBEAT_SQL = "SELECT 1";
     private final static String DEFAULT_SCHEMA_DATA_NODE = "";
     private final static String DEFAULT_SCHEMA_GROUP= "default";
-    private final static String DEFAULT_RULE = "global_rule";
 
 
     private final Map<String, TableRuleConfig> tableRules;
@@ -63,7 +62,7 @@ public class MyXMLSchemaLoader implements SchemaLoader {
 
     private final Map<String, List<DataSourceConfig>> groupDsMap; // groupName => dataSourceConfigList
     private final Map<String, List<DataNodeConfig>> tableNameDataNodeMap; // tableName => dataNodeConfigList
-    private final Map<String, Integer[]> tableIndexMap; //从tableName => (id, dataNodeIndex) => dataNodeIndex
+    private final Map<String, Map<Integer, Integer>> tableIndexMap; //从tableName => (id, dataNodeIndex) => dataNodeIndex
 
     public MyXMLSchemaLoader(String schemaFile, String ruleFile, String serversFile) {
         MyXMLRuleLoader ruleLoader = new MyXMLRuleLoader(ruleFile, serversFile);
@@ -75,7 +74,7 @@ public class MyXMLSchemaLoader implements SchemaLoader {
         this.schemas = new HashMap<String, SchemaConfig>();
         this.groupDsMap = new HashMap<String, List<DataSourceConfig>>();
         this.tableNameDataNodeMap = new HashMap<String, List<DataNodeConfig>>();
-        this.tableIndexMap = new HashMap<String, Integer[]>();
+        this.tableIndexMap = new HashMap<String, Map<Integer, Integer>>();
         this.load(DEFAULT_SCHEMA_DTD, schemaFile == null ? DEFAULT_SCHEMA_XML : schemaFile,
                   DEFAULT_SERVERS_DTD, serversFile == null ? DEFAULT_SERVERS_XML : serversFile);
     }
@@ -112,6 +111,11 @@ public class MyXMLSchemaLoader implements SchemaLoader {
     @Override
     public Set<RuleConfig> listRuleConfig() {
         return rules;
+    }
+
+    @Override
+    public Map<String, Map<Integer, Integer>> getTableIndex() {
+        return tableIndexMap;
     }
 
     private void load(String schemaDtdFile, String schemaXmlFile,
@@ -175,16 +179,17 @@ public class MyXMLSchemaLoader implements SchemaLoader {
         if (configs.size() == 1){
             return tableName + "_dn[0]";
         }else{
-            return tableName + "_dn$0-" + configs.size();
+            return tableName + "_dn$0-" + (configs.size() - 1);
         }
     }
 
     private Map<String, TableConfig> loadTables(){
         Map<String, TableConfig> tables = new HashMap<String, TableConfig>();
         for (Map.Entry<String, List<DataNodeConfig>> entry : tableNameDataNodeMap.entrySet()){
-            String name = entry.getKey().toUpperCase();
-            String dataNode = generateTableDataNodeStr(entry.getValue(), entry.getKey());
-            TableRuleConfig tableRule = tableRules.get(DEFAULT_RULE);
+            String tableName = entry.getKey();
+            String name = tableName.toUpperCase();
+            String dataNode = generateTableDataNodeStr(entry.getValue(), tableName);
+            TableRuleConfig tableRule = tableRules.get(tableName + "_rule");
             boolean ruleRequired = false;
             TableConfig table = new TableConfig(name, dataNode, tableRule, ruleRequired);
             tables.put(table.getName(), table);
@@ -256,22 +261,27 @@ public class MyXMLSchemaLoader implements SchemaLoader {
             if (brotherDsConfigs != null && masterDsConfigs.size() != brotherDsConfigs.size()){
                 throw new ConfigException("masterGroup brotherGroup server number not equals!");
             }
+            Map<Integer, Integer> tableIndex = new HashMap<Integer, Integer>();
             for (int k = 0; k < masterDsConfigs.size(); k++){
                 DataNodeConfig nodeConfig = new DataNodeConfig();
                 StringBuilder dsString = new StringBuilder();
+                DataSourceConfig masterSource = masterDsConfigs.get(k);
+                DataSourceConfig brotherSource = brotherDsConfigs.get(k);
                 if (brotherDsConfigs == null){
-                    dsString.append(masterDsConfigs.get(k).getName());
+                    dsString.append(masterSource.getName());
                 }else{
-                    dsString.append(masterDsConfigs.get(k).getName());
+                    dsString.append(masterSource.getName());
                     dsString.append(",");
-                    dsString.append(brotherDsConfigs.get(k).getName());
+                    dsString.append(brotherSource.getName());
                 }
                 nodeConfig.setName(dataNodeName + "[" + k + "]");
                 nodeConfig.setDataSource(dsString.toString());
                 nodeConfig.setHeartbeatSQL(DEFAULT_HEARTBEAT_SQL);
                 configList.add(nodeConfig);
                 tableDataNodeList.add(nodeConfig);
+                tableIndex.put(masterSource.getId(), k);//brother和master具有一一对应关系，master的index就是brother的index
             }
+            tableIndexMap.put(tableName, tableIndex);
             tableNameDataNodeMap.put(tableName, tableDataNodeList);
         }
 
@@ -304,7 +314,7 @@ public class MyXMLSchemaLoader implements SchemaLoader {
                     int id = Integer.parseInt(ConfigUtil.getFirstContentByTag(element, "id"));
                     String host = ConfigUtil.getFirstContentByTag(element, "host");
                     int port = Integer.parseInt(ConfigUtil.getFirstContentByTag(element, "port"));
-                    slashName = ConfigUtil.getFirstContentByTag(element, "ds_name");
+                    slashName = ConfigUtil.getFirstContentByTag(element, "db_name");
                     String user = ConfigUtil.getFirstContentByTag(element, "user");
                     String password = ConfigUtil.getFirstContentByTag(element, "password");
 
@@ -320,6 +330,7 @@ public class MyXMLSchemaLoader implements SchemaLoader {
                     config.setPassword(password);
                     config.setDatabase(slashName);
                     config.setSqlMode(DEFAULT_SQL_MODE);
+                    config.setId(id);
                     dscList.add(config);
                     groupDsList.add(config);
                 }

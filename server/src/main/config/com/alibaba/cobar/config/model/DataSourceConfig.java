@@ -34,6 +34,9 @@ public final class DataSourceConfig {
     private String sqlMode;
     private int sqlRecordCount = DEFAULT_SQL_RECORD_COUNT;
 
+    //add by hlr
+    private int id; //用于唯一标识ds，从server.xml中读取
+
     public String getName() {
         return name;
     }
@@ -104,6 +107,15 @@ public final class DataSourceConfig {
 
     public void setSqlRecordCount(int sqlRecordCount) {
         this.sqlRecordCount = sqlRecordCount;
+    }
+
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     @Override
