@@ -18,11 +18,14 @@
  */
 package com.alibaba.cobar.route.function;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.alibaba.cobar.CobarServer;
+import com.alibaba.cobar.parser.ast.expression.primary.function.FunctionExpression;
 import junit.framework.TestCase;
 
 import org.junit.Assert;
@@ -34,7 +37,32 @@ import com.alibaba.cobar.parser.util.ListUtil;
 /**
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
  */
-public class PartitionByStringTest extends TestCase {
+public class RouteFunctionTest extends TestCase {
+
+    public void testPartitionByMachineId() throws UnsupportedEncodingException {
+        CobarServer.getInstance();
+        PartitionByMachineId prototype = new PartitionByMachineId("prototype");
+        FunctionExpression function = prototype.constructFunction((List<Expression>) ListUtil.createList(
+                new PlaceHolder("user_id", "USER_ID").setCacheEvalRst(false)));
+        function.setCacheEvalRst(false);
+        function.init();
+
+        Map<String, Object> map = new HashMap<String, Object>(1, 1);
+        String machineIdStr = generateMachineIdString(3);
+        map.put("USER_ID", machineIdStr);
+        map.put("TABLE_NAME", "USER");
+        Integer v = (Integer) function.evaluation(map);
+        System.out.println("index = " + v);
+    }
+
+    private String generateMachineIdString(int machineId) throws UnsupportedEncodingException {
+        byte highByte = (byte) ((machineId >>> 4) & 0xFF);
+        byte lowByte = (byte) ((machineId & (~(highByte << 4))) << 4);
+        byte[] bytes = new byte[6];
+        bytes[2] = highByte;
+        bytes[3] = lowByte;
+        return new String(bytes, "utf-8");
+    }
 
     public void testMyFunction(){
         TestFunction sut = new TestFunction(

@@ -36,6 +36,7 @@ import org.w3c.dom.NodeList;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
@@ -74,7 +75,7 @@ public class MyXMLSchemaLoader implements SchemaLoader {
         this.schemas = new HashMap<String, SchemaConfig>();
         this.groupDsMap = new HashMap<String, List<DataSourceConfig>>();
         this.tableNameDataNodeMap = new HashMap<String, List<DataNodeConfig>>();
-        this.tableIndexMap = new HashMap<String, Map<Integer, Integer>>();
+        this.tableIndexMap = new ConcurrentHashMap<String, Map<Integer, Integer>>();
         this.load(DEFAULT_SCHEMA_DTD, schemaFile == null ? DEFAULT_SCHEMA_XML : schemaFile,
                   DEFAULT_SERVERS_DTD, serversFile == null ? DEFAULT_SERVERS_XML : serversFile);
     }
@@ -261,7 +262,7 @@ public class MyXMLSchemaLoader implements SchemaLoader {
             if (brotherDsConfigs != null && masterDsConfigs.size() != brotherDsConfigs.size()){
                 throw new ConfigException("masterGroup brotherGroup server number not equals!");
             }
-            Map<Integer, Integer> tableIndex = new HashMap<Integer, Integer>();
+            Map<Integer, Integer> tableIndex = new ConcurrentHashMap<Integer, Integer>();
             for (int k = 0; k < masterDsConfigs.size(); k++){
                 DataNodeConfig nodeConfig = new DataNodeConfig();
                 StringBuilder dsString = new StringBuilder();
@@ -281,7 +282,7 @@ public class MyXMLSchemaLoader implements SchemaLoader {
                 tableDataNodeList.add(nodeConfig);
                 tableIndex.put(masterSource.getId(), k);//brother和master具有一一对应关系，master的index就是brother的index
             }
-            tableIndexMap.put(tableName, tableIndex);
+            tableIndexMap.put(tableName.toUpperCase(), tableIndex);
             tableNameDataNodeMap.put(tableName, tableDataNodeList);
         }
 

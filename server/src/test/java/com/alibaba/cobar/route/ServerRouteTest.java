@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.alibaba.cobar.config.loader.xml.MyXMLSchemaLoader;
 import junit.framework.Assert;
 
 import com.alibaba.cobar.config.loader.SchemaLoader;
@@ -49,9 +50,11 @@ public class ServerRouteTest extends AbstractAliasConvert {
     protected Map<String, SchemaConfig> schemaMap;
 
     public ServerRouteTest() {
-        String schemaFile = "/route/schema.xml";
-        String ruleFile = "/route/rule.xml";
-        SchemaLoader schemaLoader = new XMLSchemaLoader(schemaFile, ruleFile);
+        String schemaFile = "/myschema.xml";
+        String ruleFile = "/myrule.xml";
+        String serverFile = "/servers.xml";
+//        SchemaLoader schemaLoader = new XMLSchemaLoader(schemaFile, ruleFile);
+        SchemaLoader schemaLoader = new MyXMLSchemaLoader(schemaFile, ruleFile, serverFile);
         try {
             RouteRuleInitializer.initRouteRule(schemaLoader);
         } catch (SQLSyntaxErrorException e) {
@@ -65,6 +68,10 @@ public class ServerRouteTest extends AbstractAliasConvert {
     protected void setUp() throws Exception {
         // super.setUp();
         // schemaMap = CobarServer.getInstance().getConfig().getSchemas();
+    }
+
+    public void testInitRule(){
+
     }
 
     public void testRouteInsertShort() throws Exception {

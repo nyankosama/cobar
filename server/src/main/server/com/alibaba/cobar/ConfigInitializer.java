@@ -58,7 +58,6 @@ public class ConfigInitializer {
         XMLConfigLoader configLoader = new XMLConfigLoader(schemaLoader);
         try {
             RouteRuleInitializer.initRouteRule(schemaLoader);
-            schemaLoader = null;
         } catch (SQLSyntaxErrorException e) {
             throw new ConfigException(e);
         }
