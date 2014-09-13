@@ -41,15 +41,14 @@ import com.alibaba.cobar.config.model.rule.TableRuleConfig;
 import com.alibaba.cobar.config.util.ConfigException;
 import com.alibaba.cobar.config.util.ConfigUtil;
 import com.alibaba.cobar.config.util.ParameterMapping;
-import com.alibaba.cobar.util.SplitUtil;
 
 /**
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
  */
 @SuppressWarnings("unchecked")
-public class MyXMLRuleLoader {
-    private final static String DEFAULT_RULE_DTD = "/myrule.dtd";
-    private final static String DEFAULT_RULE_XML = "/myrule.xml";
+public class SuperidXMLRuleLoader {
+    private final static String DEFAULT_RULE_DTD = "/rule.dtd";
+    private final static String DEFAULT_RULE_XML = "/rule.xml";
     private final static String DEFAULT_SERVERS_XML = "/servers.xml";
     private final static String DEFAULT_SERVERS_DTD = "/servers.dtd";
 
@@ -57,7 +56,7 @@ public class MyXMLRuleLoader {
     private final Set<RuleConfig> rules;
     private final Map<String, RuleAlgorithm> functions;
 
-    public MyXMLRuleLoader(String ruleFile, String serversFile) {
+    public SuperidXMLRuleLoader(String ruleFile, String serversFile) {
         this.rules = new HashSet<RuleConfig>();
         this.tableRules = new HashMap<String, TableRuleConfig>();
         this.functions = new HashMap<String, RuleAlgorithm>();
@@ -65,7 +64,7 @@ public class MyXMLRuleLoader {
                 DEFAULT_SERVERS_DTD, serversFile == null ? DEFAULT_SERVERS_XML : serversFile);
     }
 
-    public MyXMLRuleLoader() {
+    public SuperidXMLRuleLoader() {
         this(null, null);
     }
 

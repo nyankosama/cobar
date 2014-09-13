@@ -36,7 +36,7 @@
                             <!ELEMENT from (#PCDATA) >
                             <!ELEMENT to (#PCDATA) >
             <!ELEMENT tables (table+) >
-                <!ELEMENT table (table_name, split_columns, master_group, brother_group) >
+                <!ELEMENT table (table_name, split_columns, master_group, brother_group*) >
                     <!ELEMENT table_name (#PCDATA) >
                     <!ELEMENT split_columns (column) >
                         <!ELEMENT column (#PCDATA) >

@@ -16,6 +16,7 @@
 package com.alibaba.cobar;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.alibaba.cobar.config.model.DataSourceConfig;
@@ -23,6 +24,8 @@ import com.alibaba.cobar.config.model.QuarantineConfig;
 import com.alibaba.cobar.config.model.SchemaConfig;
 import com.alibaba.cobar.config.model.SystemConfig;
 import com.alibaba.cobar.config.model.UserConfig;
+import com.alibaba.cobar.config.model.rule.RuleAlgorithm;
+import com.alibaba.cobar.config.model.rule.RuleConfig;
 import com.alibaba.cobar.mysql.MySQLDataNode;
 import com.alibaba.cobar.util.TimeUtil;
 
@@ -47,6 +50,8 @@ public class CobarConfig {
     private volatile Map<String, DataSourceConfig> dataSources;
     private volatile Map<String, DataSourceConfig> _dataSources;
     private volatile Map<String, Map<Integer, Integer>> routeTableIndex;
+    private volatile Map<String, RuleAlgorithm> ruleFunctions;
+    private volatile Set<RuleConfig> listRuleConfig;
     private long reloadTime;
     private long rollbackTime;
     private int status;
@@ -61,8 +66,9 @@ public class CobarConfig {
         this.dataNodes = confInit.getDataNodes();
         this.quarantine = confInit.getQuarantine();
         this.cluster = confInit.getCluster();
+        this.ruleFunctions = confInit.getRuleFunctions();
+        this.listRuleConfig = confInit.getListRuleConfig();
         this.routeTableIndex = confInit.getRouteTableIndex();
-
         this.reloadTime = TimeUtil.currentTimeMillis();
         this.rollbackTime = -1L;
         this.status = RELOAD;
@@ -131,6 +137,14 @@ public class CobarConfig {
 
     public long getRollbackTime() {
         return rollbackTime;
+    }
+
+    public Set<RuleConfig> getListRuleConfig() {
+        return listRuleConfig;
+    }
+
+    public Map<String, RuleAlgorithm> getRuleFunctions() {
+        return ruleFunctions;
     }
 
     public Map<String, Map<Integer, Integer>> getRouteTableIndex() {

@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.alibaba.cobar.CobarConfig;
 import com.alibaba.cobar.config.loader.SchemaLoader;
 import com.alibaba.cobar.config.model.rule.RuleAlgorithm;
 import com.alibaba.cobar.config.model.rule.RuleConfig;
@@ -40,11 +41,11 @@ import com.alibaba.cobar.route.function.ExpressionAdapter;
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
  */
 public class RouteRuleInitializer {
-    public static void initRouteRule(SchemaLoader loader) throws SQLSyntaxErrorException {
-        Map<String, RuleAlgorithm> functions = loader.getFunctions();
+    public static void initRouteRule(CobarConfig config) throws SQLSyntaxErrorException {
+        Map<String, RuleAlgorithm> functions = config.getRuleFunctions();
         MySQLFunctionManager functionManager = new MySQLFunctionManager(true);
         buildFuncManager(functionManager, functions);
-        for (RuleConfig conf : loader.listRuleConfig()) {
+        for (RuleConfig conf : config.getListRuleConfig()) {
             String algorithmString = conf.getAlgorithm();
             MySQLLexer lexer = new MySQLLexer(algorithmString);
             MySQLExprParser parser = new MySQLExprParser(lexer, functionManager, false, MySQLParser.DEFAULT_CHARSET);

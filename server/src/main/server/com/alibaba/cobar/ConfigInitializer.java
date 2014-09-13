@@ -25,15 +25,16 @@ import java.util.Set;
 
 import com.alibaba.cobar.config.loader.ConfigLoader;
 import com.alibaba.cobar.config.loader.SchemaLoader;
-import com.alibaba.cobar.config.loader.xml.MyXMLSchemaLoader;
+import com.alibaba.cobar.config.loader.xml.SuperidXMLSchemaLoader;
 import com.alibaba.cobar.config.loader.xml.XMLConfigLoader;
-import com.alibaba.cobar.config.loader.xml.XMLSchemaLoader;
 import com.alibaba.cobar.config.model.DataNodeConfig;
 import com.alibaba.cobar.config.model.DataSourceConfig;
 import com.alibaba.cobar.config.model.QuarantineConfig;
 import com.alibaba.cobar.config.model.SchemaConfig;
 import com.alibaba.cobar.config.model.SystemConfig;
 import com.alibaba.cobar.config.model.UserConfig;
+import com.alibaba.cobar.config.model.rule.RuleAlgorithm;
+import com.alibaba.cobar.config.model.rule.RuleConfig;
 import com.alibaba.cobar.config.util.ConfigException;
 import com.alibaba.cobar.mysql.MySQLDataNode;
 import com.alibaba.cobar.mysql.MySQLDataSource;
@@ -52,15 +53,18 @@ public class ConfigInitializer {
     private volatile Map<String, MySQLDataNode> dataNodes;
     private volatile Map<String, DataSourceConfig> dataSources;
     private volatile Map<String, Map<Integer, Integer>> routeTableIndex;
+    private volatile Map<String, RuleAlgorithm> ruleFunctions;
+    private volatile Set<RuleConfig> listRuleConfig;
+
 
     public ConfigInitializer() {
-        SchemaLoader schemaLoader = new MyXMLSchemaLoader();
+        SchemaLoader schemaLoader = new SuperidXMLSchemaLoader();
         XMLConfigLoader configLoader = new XMLConfigLoader(schemaLoader);
-        try {
-            RouteRuleInitializer.initRouteRule(schemaLoader);
-        } catch (SQLSyntaxErrorException e) {
-            throw new ConfigException(e);
-        }
+//        try {
+//            RouteRuleInitializer.initRouteRule(schemaLoader);
+//        } catch (SQLSyntaxErrorException e) {
+//            throw new ConfigException(e);
+//        }
         this.system = configLoader.getSystemConfig();
         this.users = configLoader.getUserConfigs();
         this.schemas = configLoader.getSchemaConfigs();
@@ -69,6 +73,8 @@ public class ConfigInitializer {
         this.quarantine = configLoader.getQuarantineConfig();
         this.cluster = initCobarCluster(configLoader);
         this.routeTableIndex = schemaLoader.getTableIndex();
+        this.ruleFunctions = schemaLoader.getFunctions();
+        this.listRuleConfig = schemaLoader.listRuleConfig();
         this.checkConfig();
     }
 
@@ -132,6 +138,14 @@ public class ConfigInitializer {
 
     public Map<String, Map<Integer, Integer>> getRouteTableIndex() {
         return routeTableIndex;
+    }
+
+    public Map<String, RuleAlgorithm> getRuleFunctions() {
+        return ruleFunctions;
+    }
+
+    public Set<RuleConfig> getListRuleConfig() {
+        return listRuleConfig;
     }
 
     private CobarCluster initCobarCluster(ConfigLoader configLoader) {

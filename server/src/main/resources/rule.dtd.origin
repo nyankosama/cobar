@@ -20,7 +20,8 @@
         <!ELEMENT tableRule (rule+)>
         <!ATTLIST tableRule name CDATA #REQUIRED>
 
-        <!ELEMENT rule (algorithm)>
+        <!ELEMENT rule (columns,algorithm)>
+        <!ELEMENT columns (#PCDATA)>
         <!ELEMENT algorithm (#PCDATA)>
 
         <!ELEMENT function (property*)>

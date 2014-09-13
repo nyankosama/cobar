@@ -28,11 +28,10 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import com.alibaba.cobar.config.loader.xml.MyXMLSchemaLoader;
+import com.alibaba.cobar.config.loader.xml.SuperidXMLSchemaLoader;
 import junit.framework.Assert;
 
 import com.alibaba.cobar.config.loader.SchemaLoader;
-import com.alibaba.cobar.config.loader.xml.XMLSchemaLoader;
 import com.alibaba.cobar.config.model.SchemaConfig;
 import com.alibaba.cobar.config.util.ConfigException;
 import com.alibaba.cobar.parser.ast.expression.primary.RowExpression;
@@ -54,14 +53,14 @@ public class ServerRouteTest extends AbstractAliasConvert {
         String ruleFile = "/myrule.xml";
         String serverFile = "/servers.xml";
 //        SchemaLoader schemaLoader = new XMLSchemaLoader(schemaFile, ruleFile);
-        SchemaLoader schemaLoader = new MyXMLSchemaLoader(schemaFile, ruleFile, serverFile);
-        try {
-            RouteRuleInitializer.initRouteRule(schemaLoader);
-        } catch (SQLSyntaxErrorException e) {
-            throw new ConfigException(e);
-        } catch (RuntimeException ee) {
-            throw ee;
-        }
+        SchemaLoader schemaLoader = new SuperidXMLSchemaLoader(schemaFile, ruleFile, serverFile);
+//        try {
+//            RouteRuleInitializer.initRouteRule(schemaLoader);
+//        } catch (SQLSyntaxErrorException e) {
+//            throw new ConfigException(e);
+//        } catch (RuntimeException ee) {
+//            throw ee;
+//        }
         schemaMap = schemaLoader.getSchemas();
     }
 

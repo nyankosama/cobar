@@ -38,22 +38,13 @@ public class PartitionByMachineId extends FunctionExpression implements RuleAlgo
         String tableName = (String) parameters.get("TABLE_NAME");
         Map<Integer, Integer> tableIndex = routeTableIndex.get(tableName);
         String arg = (String) arguments.get(0).evaluation(parameters);
-        try {
-            byte[] bytes = arg.getBytes("utf-8");
-            int machineId = getMachineId(bytes);
-            return new Integer[]{tableIndex.get(machineId)};
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            LOGGER.error("machine id encode does not be supported!");
-        }
-        return null;
+        int machineId = getMachineId(arg);
+        return new Integer[]{tableIndex.get(machineId)};
     }
 
-    private int getMachineId(byte[] bytes){
-        byte highByte = (byte) (bytes[2]  & 0xFF);
-        byte lowByte = (byte) (bytes[3] >>> 4);
-        return (highByte << 4) & 0xFF |
-                lowByte & 0xFF;
+    private int getMachineId(String tableId){
+        String machineIdStr = tableId.substring(8, 14);
+        return Integer.parseInt(machineIdStr, 16);
     }
 
     @Override

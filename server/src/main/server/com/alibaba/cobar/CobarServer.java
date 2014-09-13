@@ -16,6 +16,7 @@
 package com.alibaba.cobar;
 
 import java.io.IOException;
+import java.sql.SQLSyntaxErrorException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -23,6 +24,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.alibaba.cobar.config.util.ConfigException;
+import com.alibaba.cobar.route.config.RouteRuleInitializer;
 import org.apache.log4j.Logger;
 import org.apache.log4j.helpers.LogLog;
 
@@ -53,14 +56,14 @@ public class CobarServer {
         return INSTANCE;
     }
 
-    private final CobarConfig config;
-    private final Timer timer;
-    private final NameableExecutor managerExecutor;
-    private final NameableExecutor timerExecutor;
-    private final NameableExecutor initExecutor;
-    private final SQLRecorder sqlRecorder;
-    private final AtomicBoolean isOnline;
-    private final long startupTime;
+    private CobarConfig config;
+    private Timer timer;
+    private NameableExecutor managerExecutor;
+    private NameableExecutor timerExecutor;
+    private NameableExecutor initExecutor;
+    private SQLRecorder sqlRecorder;
+    private AtomicBoolean isOnline;
+    private long startupTime;
     private NIOProcessor[] processors;
     private NIOConnector connector;
     private NIOAcceptor manager;
@@ -77,6 +80,14 @@ public class CobarServer {
         this.sqlRecorder = new SQLRecorder(system.getSqlRecordCount());
         this.isOnline = new AtomicBoolean(true);
         this.startupTime = TimeUtil.currentTimeMillis();
+    }
+
+    public void serverPostInit(){
+        try {
+            RouteRuleInitializer.initRouteRule(this.config);
+        } catch (SQLSyntaxErrorException e) {
+            throw new ConfigException(e);
+        }
     }
 
     public CobarConfig getConfig() {

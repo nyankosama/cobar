@@ -40,19 +40,33 @@ import com.alibaba.cobar.parser.util.ListUtil;
 public class RouteFunctionTest extends TestCase {
 
     public void testPartitionByMachineId() throws UnsupportedEncodingException {
-        CobarServer.getInstance();
+        CobarServer.getInstance().serverPostInit();
         PartitionByMachineId prototype = new PartitionByMachineId("prototype");
         FunctionExpression function = prototype.constructFunction((List<Expression>) ListUtil.createList(
                 new PlaceHolder("user_id", "USER_ID").setCacheEvalRst(false)));
         function.setCacheEvalRst(false);
         function.init();
-
         Map<String, Object> map = new HashMap<String, Object>(1, 1);
-        String machineIdStr = generateMachineIdString(3);
+        String machineIdStr = "5413f8310000021ff4000001";
         map.put("USER_ID", machineIdStr);
         map.put("TABLE_NAME", "USER");
         Integer v = (Integer) function.evaluation(map);
         System.out.println("index = " + v);
+    }
+
+    private void otherTest() throws UnsupportedEncodingException {
+        String machineIdStr = "5413f4c5441";
+        byte[] bytes = machineIdStr.getBytes("utf-8");
+        byte[] bytes1 = generateMachineIdbytes(2);
+    }
+
+    private byte[] generateMachineIdbytes(int machineId){
+        byte highByte = (byte) ((machineId >>> 4) & 0xFF);
+        byte lowByte = (byte) ((machineId & (~(highByte << 4))) << 4);
+        byte[] bytes = new byte[6];
+        bytes[2] = highByte;
+        bytes[3] = lowByte;
+        return bytes;
     }
 
     private String generateMachineIdString(int machineId) throws UnsupportedEncodingException {

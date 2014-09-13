@@ -30,7 +30,6 @@ import com.alibaba.cobar.config.util.ConfigException;
 import com.alibaba.cobar.config.util.ConfigUtil;
 import com.alibaba.cobar.util.SplitUtil;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.IOException;
@@ -42,9 +41,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
  */
 @SuppressWarnings("unchecked")
-public class MyXMLSchemaLoader implements SchemaLoader {
-    private final static String DEFAULT_SCHEMA_DTD = "/myschema.dtd";
-    private final static String DEFAULT_SCHEMA_XML = "/myschema.xml";
+public class SuperidXMLSchemaLoader implements SchemaLoader {
+    private final static String DEFAULT_SCHEMA_DTD = "/schema.dtd";
+    private final static String DEFAULT_SCHEMA_XML = "/schema.xml";
     private final static String DEFAULT_SERVERS_DTD = "/servers.dtd";
     private final static String DEFAULT_SERVERS_XML = "/servers.xml";
     private final static String DEFAULT_DS_TYPE = "mysql";
@@ -65,8 +64,8 @@ public class MyXMLSchemaLoader implements SchemaLoader {
     private final Map<String, List<DataNodeConfig>> tableNameDataNodeMap; // tableName => dataNodeConfigList
     private final Map<String, Map<Integer, Integer>> tableIndexMap; //从tableName => (id, dataNodeIndex) => dataNodeIndex
 
-    public MyXMLSchemaLoader(String schemaFile, String ruleFile, String serversFile) {
-        MyXMLRuleLoader ruleLoader = new MyXMLRuleLoader(ruleFile, serversFile);
+    public SuperidXMLSchemaLoader(String schemaFile, String ruleFile, String serversFile) {
+        SuperidXMLRuleLoader ruleLoader = new SuperidXMLRuleLoader(ruleFile, serversFile);
         this.rules = ruleLoader.listRuleConfig();
         this.tableRules = ruleLoader.getTableRules();
         this.functions = ruleLoader.getFunctions();
@@ -80,7 +79,7 @@ public class MyXMLSchemaLoader implements SchemaLoader {
                   DEFAULT_SERVERS_DTD, serversFile == null ? DEFAULT_SERVERS_XML : serversFile);
     }
 
-    public MyXMLSchemaLoader() {
+    public SuperidXMLSchemaLoader() {
         this(null, null, null);
     }
 
@@ -267,10 +266,11 @@ public class MyXMLSchemaLoader implements SchemaLoader {
                 DataNodeConfig nodeConfig = new DataNodeConfig();
                 StringBuilder dsString = new StringBuilder();
                 DataSourceConfig masterSource = masterDsConfigs.get(k);
-                DataSourceConfig brotherSource = brotherDsConfigs.get(k);
+                DataSourceConfig brotherSource = null;
                 if (brotherDsConfigs == null){
                     dsString.append(masterSource.getName());
                 }else{
+                    brotherSource = brotherDsConfigs.get(k);
                     dsString.append(masterSource.getName());
                     dsString.append(",");
                     dsString.append(brotherSource.getName());

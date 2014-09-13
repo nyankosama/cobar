@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cluster SYSTEM "servers.dtd">
 <cluster>
     <groups>
         <group>
@@ -7,11 +8,11 @@
                 <server>
                     <id>1</id>
                     <description></description>
-                    <host>mysql.szchada.com</host>
+                    <host>localhost</host>
                     <port>3306</port>
-                    <db_name>mydb</db_name>
-                    <user>superid</user>
-                    <password>superid</password>
+                    <db_name>test_1</db_name>
+                    <user>root</user>
+                    <password></password>
                     <online>true</online>
                     <capacity>1000000</capacity> <!-- 最大容量 -->
                     <size>123456</size> <!-- 当前容量 -->
@@ -19,26 +20,14 @@
                 <server>
                     <id>2</id>
                     <description></description>
-                    <host>mysql.szchada.com</host>
+                    <host>localhost</host>
                     <port>3306</port>
-                    <db_name>mydb</db_name>
-                    <user>superid</user>
-                    <password>superid</password>
+                    <db_name>test_2</db_name>
+                    <user>root</user>
+                    <password></password>
                     <online>true</online>
                     <capacity>1000000</capacity> <!-- 最大容量 -->
                     <size>654321</size> <!-- 当前容量 -->
-                </server>
-                <server>
-                    <id>3</id>
-                    <description></description>
-                    <host>mysql.szchada.com</host>
-                    <port>3306</port>
-                    <db_name>mydb</db_name>
-                    <user>superid</user>
-                    <password>superid</password>
-                    <online>false</online>
-                    <capacity>1000000</capacity> <!-- 最大容量 -->
-                    <size>111111</size> <!-- 当前容量 -->
                 </server>
             </servers>
             <migrations>
@@ -57,7 +46,7 @@
                 <column>id</column>
             </split_columns>
             <master_group>group1</master_group>
-            <brother_group>group1</brother_group>
+            <!-- <brother_group>group1</brother_group> -->
         </table>
     </tables>
 </cluster>

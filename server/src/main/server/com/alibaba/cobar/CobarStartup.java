@@ -30,6 +30,7 @@ public final class CobarStartup {
         try {
             // init
             CobarServer server = CobarServer.getInstance();
+            server.serverPostInit();
             server.beforeStart(dateFormat);
 
             // startup
