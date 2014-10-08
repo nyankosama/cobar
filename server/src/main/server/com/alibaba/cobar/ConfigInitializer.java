@@ -18,28 +18,21 @@
  */
 package com.alibaba.cobar;
 
-import java.sql.SQLSyntaxErrorException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import com.alibaba.cobar.config.loader.ConfigLoader;
 import com.alibaba.cobar.config.loader.SchemaLoader;
 import com.alibaba.cobar.config.loader.xml.SuperidXMLSchemaLoader;
 import com.alibaba.cobar.config.loader.xml.XMLConfigLoader;
-import com.alibaba.cobar.config.model.DataNodeConfig;
-import com.alibaba.cobar.config.model.DataSourceConfig;
-import com.alibaba.cobar.config.model.QuarantineConfig;
-import com.alibaba.cobar.config.model.SchemaConfig;
-import com.alibaba.cobar.config.model.SystemConfig;
-import com.alibaba.cobar.config.model.UserConfig;
+import com.alibaba.cobar.config.model.*;
 import com.alibaba.cobar.config.model.rule.RuleAlgorithm;
 import com.alibaba.cobar.config.model.rule.RuleConfig;
 import com.alibaba.cobar.config.util.ConfigException;
 import com.alibaba.cobar.mysql.MySQLDataNode;
 import com.alibaba.cobar.mysql.MySQLDataSource;
-import com.alibaba.cobar.route.config.RouteRuleInitializer;
 import com.alibaba.cobar.util.SplitUtil;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>

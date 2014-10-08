@@ -25,10 +25,6 @@
     </tableRule>
 
     <!-- 路由函数定义 -->
-    <function name="global_route_func"
-              class="com.alibaba.cobar.route.function.PartitionByLong">
-        <property name="partitionCount">2</property>
-        <property name="partitionLength">512</property>
-    </function>
+    <function name="global_route_func" class="com.alibaba.cobar.route.function.PartitionByMachineId" />
 
 </cobar:rule>

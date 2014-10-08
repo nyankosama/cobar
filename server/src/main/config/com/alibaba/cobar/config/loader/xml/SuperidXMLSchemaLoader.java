@@ -28,6 +28,7 @@ import com.alibaba.cobar.config.model.rule.RuleConfig;
 import com.alibaba.cobar.config.model.rule.TableRuleConfig;
 import com.alibaba.cobar.config.util.ConfigException;
 import com.alibaba.cobar.config.util.ConfigUtil;
+import com.alibaba.cobar.util.IntegerUtil;
 import com.alibaba.cobar.util.SplitUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -63,6 +64,7 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
     private final Map<String, List<DataSourceConfig>> groupDsMap; // groupName => dataSourceConfigList
     private final Map<String, List<DataNodeConfig>> tableNameDataNodeMap; // tableName => dataNodeConfigList
     private final Map<String, Map<Integer, Integer>> tableIndexMap; //从tableName => (id, dataNodeIndex) => dataNodeIndex
+    private final Map<String, Map<Integer, Integer>> migrationGroupNameIndexMap; //groupName => (from, to)
 
     public SuperidXMLSchemaLoader(String schemaFile, String ruleFile, String serversFile) {
         SuperidXMLRuleLoader ruleLoader = new SuperidXMLRuleLoader(ruleFile, serversFile);
@@ -75,6 +77,7 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
         this.groupDsMap = new HashMap<String, List<DataSourceConfig>>();
         this.tableNameDataNodeMap = new HashMap<String, List<DataNodeConfig>>();
         this.tableIndexMap = new ConcurrentHashMap<String, Map<Integer, Integer>>();
+        this.migrationGroupNameIndexMap = new HashMap<String, Map<Integer, Integer>>();
         this.load(DEFAULT_SCHEMA_DTD, schemaFile == null ? DEFAULT_SCHEMA_XML : schemaFile,
                   DEFAULT_SERVERS_DTD, serversFile == null ? DEFAULT_SERVERS_XML : serversFile);
     }
@@ -132,6 +135,7 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
             Element schemaRoot = ConfigUtil.getDocument(schemaDtd, schemaXml).getDocumentElement();
             Element serversRoot = ConfigUtil.getDocument(serversDtd, serversXml).getDocumentElement();
             loadDataSources(serversRoot);
+            loadMigration(serversRoot);
             loadDataNodes(serversRoot);
             loadSchemas(schemaRoot);
         } catch (ConfigException e) {
@@ -162,6 +166,25 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
                     serversXml.close();
                 } catch (IOException e) {
                 }
+            }
+        }
+    }
+
+    private void loadMigration(Element schemaRoot){
+        NodeList nodeList = schemaRoot.getElementsByTagName("migration");
+        for(int i = 0; i < nodeList.getLength(); i++){
+            Element element = (Element) nodeList.item(i);
+            String groupName = ConfigUtil.getFirstContentByTag(element, "groupName");
+            int from = Integer.parseInt(ConfigUtil.getFirstContentByTag(element, "from"));
+            int to = Integer.parseInt(ConfigUtil.getFirstContentByTag(element, "to"));
+            if (!migrationGroupNameIndexMap.containsKey(groupName)){
+                Map<Integer, Integer> fromToMap = new HashMap<Integer, Integer>();
+                fromToMap.put(from, to);
+                migrationGroupNameIndexMap.put(groupName, fromToMap);
+            }else{
+                Map<Integer, Integer> fromToMap = migrationGroupNameIndexMap.get(groupName);
+                fromToMap.put(from, to);
+                migrationGroupNameIndexMap.put(groupName, fromToMap);
             }
         }
     }
@@ -281,6 +304,19 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
                 configList.add(nodeConfig);
                 tableDataNodeList.add(nodeConfig);
                 tableIndex.put(masterSource.getId(), k);//brother和master具有一一对应关系，master的index就是brother的index
+            }
+            //处理migration
+            if (migrationGroupNameIndexMap.containsKey(masterGroupName)){
+                Map<Integer, Integer> fromToMap = migrationGroupNameIndexMap.get(masterGroupName);
+                for (Map.Entry<Integer, Integer> entry : fromToMap.entrySet()){
+                    tableIndex.put(entry.getKey(), tableIndex.get(entry.getValue()));
+                }
+            }
+            if (migrationGroupNameIndexMap.containsKey(brotherGroupName)){
+                Map<Integer, Integer> fromToMap = migrationGroupNameIndexMap.get(masterGroupName);
+                for (Map.Entry<Integer, Integer> entry : fromToMap.entrySet()){
+                    tableIndex.put(entry.getKey(), tableIndex.get(entry.getValue()));
+                }
             }
             tableIndexMap.put(tableName.toUpperCase(), tableIndex);
             tableNameDataNodeMap.put(tableName, tableDataNodeList);
