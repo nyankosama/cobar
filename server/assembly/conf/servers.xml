@@ -8,26 +8,44 @@
                 <server>
                     <id>1</id>
                     <description></description>
-                    <host>localhost</host>
+                    <host>mysql.superid.cn</host>
                     <port>3306</port>
-                    <db_name>test_1</db_name>
-                    <user>root</user>
-                    <password></password>
+                    <db_name>dbtest1</db_name>
+                    <user>superid</user>
+                    <password>superid</password>
                     <online>true</online>
-                    <capacity>1000000</capacity> <!-- 最大容量 -->
-                    <size>123456</size> <!-- 当前容量 -->
+                    <capacity>1000000</capacity>
+                    <!-- 最大容量 -->
+                    <size>123456</size>
+                    <!-- 当前容量 -->
                 </server>
                 <server>
                     <id>2</id>
                     <description></description>
-                    <host>localhost</host>
+                    <host>mysql.superid.cn</host>
                     <port>3306</port>
-                    <db_name>test_2</db_name>
-                    <user>root</user>
-                    <password></password>
+                    <db_name>dbtest2</db_name>
+                    <user>superid</user>
+                    <password>superid</password>
                     <online>true</online>
-                    <capacity>1000000</capacity> <!-- 最大容量 -->
-                    <size>654321</size> <!-- 当前容量 -->
+                    <capacity>1000000</capacity>
+                    <!-- 最大容量 -->
+                    <size>654321</size>
+                    <!-- 当前容量 -->
+                </server>
+                <server>
+                    <id>3</id>
+                    <description></description>
+                    <host>mysql.superid.cn</host>
+                    <port>3306</port>
+                    <db_name>dbtest3</db_name>
+                    <user>superid</user>
+                    <password>superid</password>
+                    <online>false</online>
+                    <capacity>1000000</capacity>
+                    <!-- 最大容量 -->
+                    <size>111111</size>
+                    <!-- 当前容量 -->
                 </server>
             </servers>
             <migrations>
@@ -46,7 +64,8 @@
                 <column>id</column>
             </split_columns>
             <master_group>group1</master_group>
-            <!-- <brother_group>group1</brother_group> -->
+            <brother_group>group2</brother_group>   
+            <!-- 热备份的group -->
         </table>
     </tables>
 </cluster>
