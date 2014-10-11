@@ -65,6 +65,7 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
     private final Map<String, List<DataNodeConfig>> tableNameDataNodeMap; // tableName => dataNodeConfigList
     private final Map<String, Map<Integer, Integer>> tableIndexMap; //从tableName => (id, dataNodeIndex) => dataNodeIndex
     private final Map<String, Map<Integer, Integer>> migrationGroupNameIndexMap; //groupName => (from, to)
+    private final Set<String> configuredDataNodeGroupSet;
 
     public SuperidXMLSchemaLoader(String schemaFile, String ruleFile, String serversFile) {
         SuperidXMLRuleLoader ruleLoader = new SuperidXMLRuleLoader(ruleFile, serversFile);
@@ -78,6 +79,7 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
         this.tableNameDataNodeMap = new HashMap<String, List<DataNodeConfig>>();
         this.tableIndexMap = new ConcurrentHashMap<String, Map<Integer, Integer>>();
         this.migrationGroupNameIndexMap = new HashMap<String, Map<Integer, Integer>>();
+        this.configuredDataNodeGroupSet = new HashSet<String>();
         this.load(DEFAULT_SCHEMA_DTD, schemaFile == null ? DEFAULT_SCHEMA_XML : schemaFile,
                   DEFAULT_SERVERS_DTD, serversFile == null ? DEFAULT_SERVERS_XML : serversFile);
     }
@@ -191,7 +193,11 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
 
     private void loadSchemas(Element schemaRoot) {
         String schemaName = ConfigUtil.findFirstElementByTag(schemaRoot, "schema").getAttribute("name");
+
         String dataNode = DEFAULT_SCHEMA_DATA_NODE;
+        if (dataNodes.size() != 0){
+            dataNode = dataNodes.keySet().iterator().next();
+        }
         String group = DEFAULT_SCHEMA_GROUP;
         Map<String, TableConfig> tables = loadTables();
         boolean keepSqlSchema = false;
@@ -274,6 +280,14 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
             String masterGroupName = ConfigUtil.getFirstContentByTag(tableElement, "master_group");
             tableElement.getElementsByTagName("brother_group");
             String brotherGroupName = ConfigUtil.getFirstContentByTag(tableElement, "brother_group");
+            //TODO 注意！这里有DataNode和Table配置的不好的依赖
+            //检查某个mastergroup是否已经配置到dataNode，如果重复配置则跳过。
+            //这里默认如果两张表的masterGroup相同，那么brotherGroup必须相同，分享同一个dataNode
+            if (configuredDataNodeGroupSet.contains(masterGroupName)){
+                continue;
+            }
+            configuredDataNodeGroupSet.add(masterGroupName);
+
             List<DataSourceConfig> masterDsConfigs = groupDsMap.get(masterGroupName);
             List<DataSourceConfig> brotherDsConfigs = null;
             List<DataNodeConfig> tableDataNodeList = new ArrayList<DataNodeConfig>();

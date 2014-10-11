@@ -19,6 +19,7 @@ import java.io.EOFException;
 import java.nio.channels.SocketChannel;
 import java.sql.SQLNonTransientException;
 
+import com.alibaba.cobar.route.RouteResultsetNode;
 import org.apache.log4j.Logger;
 
 import com.alibaba.cobar.CobarServer;

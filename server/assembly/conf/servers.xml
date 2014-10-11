@@ -8,11 +8,11 @@
                 <server>
                     <id>1</id>
                     <description></description>
-                    <host>mysql.superid.cn</host>
+                    <host>localhost</host>
                     <port>3306</port>
-                    <db_name>dbtest1</db_name>
-                    <user>superid</user>
-                    <password>superid</password>
+                    <db_name>test_1</db_name>
+                    <user>root</user>
+                    <password></password>
                     <online>true</online>
                     <capacity>1000000</capacity>
                     <!-- 最大容量 -->
@@ -22,11 +22,11 @@
                 <server>
                     <id>2</id>
                     <description></description>
-                    <host>mysql.superid.cn</host>
+                    <host>localhost</host>
                     <port>3306</port>
-                    <db_name>dbtest2</db_name>
-                    <user>superid</user>
-                    <password>superid</password>
+                    <db_name>test_2</db_name>
+                    <user>root</user>
+                    <password></password>
                     <online>true</online>
                     <capacity>1000000</capacity>
                     <!-- 最大容量 -->
@@ -36,25 +36,18 @@
                 <server>
                     <id>3</id>
                     <description></description>
-                    <host>mysql.superid.cn</host>
+                    <host>localhost</host>
                     <port>3306</port>
-                    <db_name>dbtest3</db_name>
-                    <user>superid</user>
-                    <password>superid</password>
-                    <online>false</online>
+                    <db_name>test_3</db_name>
+                    <user>root</user>
+                    <password></password>
+                    <online>true</online>
                     <capacity>1000000</capacity>
                     <!-- 最大容量 -->
-                    <size>111111</size>
+                    <size>654321</size>
                     <!-- 当前容量 -->
                 </server>
             </servers>
-            <migrations>
-                <migration>
-                    <groupName>group1</groupName>
-                    <from>3</from>
-                    <to>1</to>
-                </migration>
-            </migrations>
         </group>
     </groups>
     <tables>
@@ -64,8 +57,14 @@
                 <column>id</column>
             </split_columns>
             <master_group>group1</master_group>
-            <brother_group>group2</brother_group>   
             <!-- 热备份的group -->
+        </table>
+        <table>
+            <table_name>account</table_name>
+            <split_columns>
+                <column>id</column>
+            </split_columns>
+            <master_group>group1</master_group>
         </table>
     </tables>
 </cluster>
