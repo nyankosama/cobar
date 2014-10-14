@@ -52,7 +52,7 @@
     </groups>
     <tables>
         <table>
-            <table_name>user</table_name>
+            <table_name>demo_user</table_name>
             <split_columns> <!-- 分表字段 -->
                 <column>id</column>
             </split_columns>

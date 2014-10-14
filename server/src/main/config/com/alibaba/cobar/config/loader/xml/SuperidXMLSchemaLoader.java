@@ -65,7 +65,6 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
     private final Map<String, List<DataNodeConfig>> tableNameDataNodeMap; // tableName => dataNodeConfigList
     private final Map<String, Map<Integer, Integer>> tableIndexMap; //从tableName => (id, dataNodeIndex) => dataNodeIndex
     private final Map<String, Map<Integer, Integer>> migrationGroupNameIndexMap; //groupName => (from, to)
-    private final Set<String> configuredDataNodeGroupSet;
 
     public SuperidXMLSchemaLoader(String schemaFile, String ruleFile, String serversFile) {
         SuperidXMLRuleLoader ruleLoader = new SuperidXMLRuleLoader(ruleFile, serversFile);
@@ -79,7 +78,6 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
         this.tableNameDataNodeMap = new HashMap<String, List<DataNodeConfig>>();
         this.tableIndexMap = new ConcurrentHashMap<String, Map<Integer, Integer>>();
         this.migrationGroupNameIndexMap = new HashMap<String, Map<Integer, Integer>>();
-        this.configuredDataNodeGroupSet = new HashSet<String>();
         this.load(DEFAULT_SCHEMA_DTD, schemaFile == null ? DEFAULT_SCHEMA_XML : schemaFile,
                   DEFAULT_SERVERS_DTD, serversFile == null ? DEFAULT_SERVERS_XML : serversFile);
     }
@@ -204,11 +202,13 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
         schemas.put(schemaName, new SchemaConfig(schemaName, dataNode, group, keepSqlSchema, tables));
     }
 
-    private String generateTableDataNodeStr(List<DataNodeConfig> configs, String tableName){
+    private String generateTableDataNodeStr(List<DataNodeConfig> configs){
+        String dataNodeName = configs.get(0).getName();
+        String prefix = dataNodeName.substring(0, dataNodeName.indexOf("_dn["));
         if (configs.size() == 1){
-            return tableName + "_dn[0]";
+            return prefix + "_dn[0]";
         }else{
-            return tableName + "_dn$0-" + (configs.size() - 1);
+            return prefix + "_dn$0-" + (configs.size() - 1);
         }
     }
 
@@ -217,7 +217,7 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
         for (Map.Entry<String, List<DataNodeConfig>> entry : tableNameDataNodeMap.entrySet()){
             String tableName = entry.getKey();
             String name = tableName.toUpperCase();
-            String dataNode = generateTableDataNodeStr(entry.getValue(), tableName);
+            String dataNode = generateTableDataNodeStr(entry.getValue());
             TableRuleConfig tableRule = tableRules.get(tableName + "_rule");
             boolean ruleRequired = false;
             TableConfig table = new TableConfig(name, dataNode, tableRule, ruleRequired);
@@ -333,17 +333,10 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
         for (int i = 0; i < tableList.getLength(); i++){
             Element tableElement = (Element) tableList.item(i);
             String tableName = ConfigUtil.getFirstContentByTag(tableElement, "table_name");
-            String dataNodeName = tableName + "_dn";
+//            String dataNodeName = tableName + "_dn";
             String masterGroupName = ConfigUtil.getFirstContentByTag(tableElement, "master_group");
             tableElement.getElementsByTagName("brother_group");
             String brotherGroupName = ConfigUtil.getFirstContentByTag(tableElement, "brother_group");
-            //TODO 注意！这里有DataNode和Table配置的不好的依赖
-            //检查某个mastergroup是否已经配置到dataNode，如果重复配置则跳过。
-            //这里默认如果两张表的masterGroup相同，那么brotherGroup必须相同，分享同一个dataNode
-            if (configuredDataNodeGroupSet.contains(masterGroupName)){
-                continue;
-            }
-            configuredDataNodeGroupSet.add(masterGroupName);
 
             List<DataSourceConfig> masterDsConfigs = groupDsMap.get(masterGroupName);
             List<DataSourceConfig> brotherDsConfigs = null;
@@ -369,7 +362,7 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
                     dsString.append(",");
                     dsString.append(brotherSource.getName());
                 }
-                nodeConfig.setName(dataNodeName + "[" + k + "]");
+                nodeConfig.setName(masterGroupName + "_dn[" + k + "]");
                 nodeConfig.setDataSource(dsString.toString());
                 nodeConfig.setHeartbeatSQL(DEFAULT_HEARTBEAT_SQL);
                 configList.add(nodeConfig);
@@ -395,7 +388,7 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
 
         for (DataNodeConfig conf : configList) {
             if (dataNodes.containsKey(conf.getName())) {
-                throw new ConfigException("dataNode " + conf.getName() + " duplicated!");
+                continue;
             }
             dataNodes.put(conf.getName(), conf);
         }
