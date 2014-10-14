@@ -195,9 +195,9 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
         String schemaName = ConfigUtil.findFirstElementByTag(schemaRoot, "schema").getAttribute("name");
 
         String dataNode = DEFAULT_SCHEMA_DATA_NODE;
-        if (dataNodes.size() != 0){
-            dataNode = dataNodes.keySet().iterator().next();
-        }
+//        if (dataNodes.size() != 0){
+//            dataNode = dataNodes.keySet().iterator().next();
+//        }
         String group = DEFAULT_SCHEMA_GROUP;
         Map<String, TableConfig> tables = loadTables();
         boolean keepSqlSchema = false;
@@ -267,6 +267,63 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
             if (!dataNodes.containsKey(node)) {
                 throw new ConfigException("dataNode '" + node + "' is not found!");
             }
+        }
+    }
+
+    private void loadDataSources(Element root) {
+        NodeList groupList = root.getElementsByTagName("group");
+        List<DataSourceConfig> dscList = new ArrayList<DataSourceConfig>();
+        Map<String, Integer> dsNameIndexMap = new HashMap<String, Integer>();
+
+        for (int k = 0; k < groupList.getLength(); k++){
+            Element groupEle = (Element) groupList.item(k);
+            String groupName = ConfigUtil.getFirstContentByTag(groupEle, "name");
+            //TODO 这里暂时忽略migrations
+            NodeList serverList = groupEle.getElementsByTagName("server");
+            if (serverList.getLength() == 0){
+                throw new ConfigException("the size of servers in group can not be zero!");
+            }
+            String slashName = new String();
+            List<DataSourceConfig> groupDsList = new ArrayList<DataSourceConfig>();
+            try {
+                for (int i = 0; i < serverList.getLength(); i++ ){
+                    Element element = (Element) serverList.item(i);
+                    int id = Integer.parseInt(ConfigUtil.getFirstContentByTag(element, "id"));
+                    String host = ConfigUtil.getFirstContentByTag(element, "host");
+                    int port = Integer.parseInt(ConfigUtil.getFirstContentByTag(element, "port"));
+                    slashName = ConfigUtil.getFirstContentByTag(element, "db_name");
+                    String user = ConfigUtil.getFirstContentByTag(element, "user");
+                    String password = ConfigUtil.getFirstContentByTag(element, "password");
+
+                    setDsNameIndex(dsNameIndexMap, slashName);
+                    final int nameIndex = getDsNameIndex(dsNameIndexMap, slashName);
+                    //TODO 后期会支持name$0-xxx这种写法，需要对相关属性字符串进行解析
+                    DataSourceConfig config = new DataSourceConfig();
+                    config.setName(slashName + "_ds" + "[" + nameIndex + "]");
+                    config.setType(DEFAULT_DS_TYPE);
+                    config.setHost(host);
+                    config.setPort(port);
+                    config.setUser(user);
+                    config.setPassword(password);
+                    config.setDatabase(slashName);
+                    config.setSqlMode(DEFAULT_SQL_MODE);
+                    config.setId(id);
+                    dscList.add(config);
+                    groupDsList.add(config);
+                }
+                if (groupDsList.size() != 0){
+                    groupDsMap.put(groupName, groupDsList); // 确保不为0
+                }
+            }catch (Exception e){
+                throw new ConfigException("dataSource " + slashName + " define error", e);
+            }
+        }
+
+        for (DataSourceConfig dsConf : dscList) {
+            if (dataSources.containsKey(dsConf.getName())) {
+                throw new ConfigException("dataSource name " + dsConf.getName() + "duplicated!");
+            }
+            dataSources.put(dsConf.getName(), dsConf);
         }
     }
 
@@ -341,63 +398,6 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
                 throw new ConfigException("dataNode " + conf.getName() + " duplicated!");
             }
             dataNodes.put(conf.getName(), conf);
-        }
-    }
-
-    private void loadDataSources(Element root) {
-        NodeList groupList = root.getElementsByTagName("group");
-        List<DataSourceConfig> dscList = new ArrayList<DataSourceConfig>();
-        Map<String, Integer> dsNameIndexMap = new HashMap<String, Integer>();
-
-        for (int k = 0; k < groupList.getLength(); k++){
-            Element groupEle = (Element) groupList.item(k);
-            String groupName = ConfigUtil.getFirstContentByTag(groupEle, "name");
-            //TODO 这里暂时忽略migrations
-            NodeList serverList = groupEle.getElementsByTagName("server");
-            if (serverList.getLength() == 0){
-                throw new ConfigException("the size of servers in group can not be zero!");
-            }
-            String slashName = new String();
-            List<DataSourceConfig> groupDsList = new ArrayList<DataSourceConfig>();
-            try {
-                for (int i = 0; i < serverList.getLength(); i++ ){
-                    Element element = (Element) serverList.item(i);
-                    int id = Integer.parseInt(ConfigUtil.getFirstContentByTag(element, "id"));
-                    String host = ConfigUtil.getFirstContentByTag(element, "host");
-                    int port = Integer.parseInt(ConfigUtil.getFirstContentByTag(element, "port"));
-                    slashName = ConfigUtil.getFirstContentByTag(element, "db_name");
-                    String user = ConfigUtil.getFirstContentByTag(element, "user");
-                    String password = ConfigUtil.getFirstContentByTag(element, "password");
-
-                    setDsNameIndex(dsNameIndexMap, slashName);
-                    final int nameIndex = getDsNameIndex(dsNameIndexMap, slashName);
-                    //TODO 后期会支持name$0-xxx这种写法，需要对相关属性字符串进行解析
-                    DataSourceConfig config = new DataSourceConfig();
-                    config.setName(slashName + "_ds" + "[" + nameIndex + "]");
-                    config.setType(DEFAULT_DS_TYPE);
-                    config.setHost(host);
-                    config.setPort(port);
-                    config.setUser(user);
-                    config.setPassword(password);
-                    config.setDatabase(slashName);
-                    config.setSqlMode(DEFAULT_SQL_MODE);
-                    config.setId(id);
-                    dscList.add(config);
-                    groupDsList.add(config);
-                }
-                if (groupDsList.size() != 0){
-                    groupDsMap.put(groupName, groupDsList); // 确保不为0
-                }
-            }catch (Exception e){
-                throw new ConfigException("dataSource " + slashName + " define error", e);
-            }
-        }
-
-        for (DataSourceConfig dsConf : dscList) {
-            if (dataSources.containsKey(dsConf.getName())) {
-                throw new ConfigException("dataSource name " + dsConf.getName() + "duplicated!");
-            }
-            dataSources.put(dsConf.getName(), dsConf);
         }
     }
 
