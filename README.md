@@ -1,4 +1,4 @@
-cobar-with-id-generator-surpport
+cobar-with-id-generator-support
 =====
 
 //TODO README待完善
