@@ -1,6 +1,6 @@
 package com.alibaba.cobar;
 
-import com.alibaba.cobar.config.loader.xml.SuperidXMLSchemaLoader;
+import com.alibaba.cobar.config.loader.xml.ServersXMLSchemaLoader;
 import org.junit.Test;
 
 /**
@@ -13,6 +13,6 @@ public class ConfigTest {
 
     @Test
     public void testRuleXmlLoader(){
-        SuperidXMLSchemaLoader schemaLoader = new SuperidXMLSchemaLoader(SCHEMA_XML_PATH, RULE_XML_PATH, SERVERS_XML_PATH);
+        ServersXMLSchemaLoader schemaLoader = new ServersXMLSchemaLoader(SCHEMA_XML_PATH, RULE_XML_PATH, SERVERS_XML_PATH);
     }
 }

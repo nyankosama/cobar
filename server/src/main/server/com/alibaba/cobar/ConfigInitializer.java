@@ -20,7 +20,7 @@ package com.alibaba.cobar;
 
 import com.alibaba.cobar.config.loader.ConfigLoader;
 import com.alibaba.cobar.config.loader.SchemaLoader;
-import com.alibaba.cobar.config.loader.xml.SuperidXMLSchemaLoader;
+import com.alibaba.cobar.config.loader.xml.ServersXMLSchemaLoader;
 import com.alibaba.cobar.config.loader.xml.XMLConfigLoader;
 import com.alibaba.cobar.config.model.*;
 import com.alibaba.cobar.config.model.rule.RuleAlgorithm;
@@ -51,7 +51,7 @@ public class ConfigInitializer {
 
 
     public ConfigInitializer() {
-        SchemaLoader schemaLoader = new SuperidXMLSchemaLoader();
+        SchemaLoader schemaLoader = new ServersXMLSchemaLoader();
         XMLConfigLoader configLoader = new XMLConfigLoader(schemaLoader);
 //        try {
 //            RouteRuleInitializer.initRouteRule(schemaLoader);

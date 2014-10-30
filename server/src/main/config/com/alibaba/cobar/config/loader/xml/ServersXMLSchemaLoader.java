@@ -28,7 +28,6 @@ import com.alibaba.cobar.config.model.rule.RuleConfig;
 import com.alibaba.cobar.config.model.rule.TableRuleConfig;
 import com.alibaba.cobar.config.util.ConfigException;
 import com.alibaba.cobar.config.util.ConfigUtil;
-import com.alibaba.cobar.util.IntegerUtil;
 import com.alibaba.cobar.util.SplitUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -42,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
  */
 @SuppressWarnings("unchecked")
-public class SuperidXMLSchemaLoader implements SchemaLoader {
+public class ServersXMLSchemaLoader implements SchemaLoader {
     private final static String DEFAULT_SCHEMA_DTD = "/schema.dtd";
     private final static String DEFAULT_SCHEMA_XML = "/schema.xml";
     private final static String DEFAULT_SERVERS_DTD = "/servers.dtd";
@@ -66,8 +65,8 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
     private final Map<String, Map<Integer, Integer>> tableIndexMap; //从tableName => (id, dataNodeIndex) => dataNodeIndex
     private final Map<String, Map<Integer, Integer>> migrationGroupNameIndexMap; //groupName => (from, to)
 
-    public SuperidXMLSchemaLoader(String schemaFile, String ruleFile, String serversFile) {
-        SuperidXMLRuleLoader ruleLoader = new SuperidXMLRuleLoader(ruleFile, serversFile);
+    public ServersXMLSchemaLoader(String schemaFile, String ruleFile, String serversFile) {
+        ServersXMLRuleLoader ruleLoader = new ServersXMLRuleLoader(ruleFile, serversFile);
         this.rules = ruleLoader.listRuleConfig();
         this.tableRules = ruleLoader.getTableRules();
         this.functions = ruleLoader.getFunctions();
@@ -82,7 +81,7 @@ public class SuperidXMLSchemaLoader implements SchemaLoader {
                   DEFAULT_SERVERS_DTD, serversFile == null ? DEFAULT_SERVERS_XML : serversFile);
     }
 
-    public SuperidXMLSchemaLoader() {
+    public ServersXMLSchemaLoader() {
         this(null, null, null);
     }
 

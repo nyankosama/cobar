@@ -18,7 +18,6 @@
  */
 package com.alibaba.cobar.route;
 
-import java.sql.SQLSyntaxErrorException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -28,17 +27,15 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import com.alibaba.cobar.config.loader.xml.SuperidXMLSchemaLoader;
+import com.alibaba.cobar.config.loader.xml.ServersXMLSchemaLoader;
 import junit.framework.Assert;
 
 import com.alibaba.cobar.config.loader.SchemaLoader;
 import com.alibaba.cobar.config.model.SchemaConfig;
-import com.alibaba.cobar.config.util.ConfigException;
 import com.alibaba.cobar.parser.ast.expression.primary.RowExpression;
 import com.alibaba.cobar.parser.ast.stmt.SQLStatement;
 import com.alibaba.cobar.parser.ast.stmt.dml.DMLInsertStatement;
 import com.alibaba.cobar.parser.recognizer.SQLParserDelegate;
-import com.alibaba.cobar.route.config.RouteRuleInitializer;
 import com.alibaba.cobar.route.util.PermutationUtil.PermutationGenerator;
 
 /**
@@ -53,7 +50,7 @@ public class ServerRouteTest extends AbstractAliasConvert {
         String ruleFile = "/myrule.xml";
         String serverFile = "/servers.xml";
 //        SchemaLoader schemaLoader = new XMLSchemaLoader(schemaFile, ruleFile);
-        SchemaLoader schemaLoader = new SuperidXMLSchemaLoader(schemaFile, ruleFile, serverFile);
+        SchemaLoader schemaLoader = new ServersXMLSchemaLoader(schemaFile, ruleFile, serverFile);
 //        try {
 //            RouteRuleInitializer.initRouteRule(schemaLoader);
 //        } catch (SQLSyntaxErrorException e) {

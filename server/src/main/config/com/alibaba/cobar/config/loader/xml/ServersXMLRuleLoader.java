@@ -46,7 +46,7 @@ import com.alibaba.cobar.config.util.ParameterMapping;
  * @author <a href="mailto:shuo.qius@alibaba-inc.com">QIU Shuo</a>
  */
 @SuppressWarnings("unchecked")
-public class SuperidXMLRuleLoader {
+public class ServersXMLRuleLoader {
     private final static String DEFAULT_RULE_DTD = "/rule.dtd";
     private final static String DEFAULT_RULE_XML = "/rule.xml";
     private final static String DEFAULT_SERVERS_XML = "/servers.xml";
@@ -56,7 +56,7 @@ public class SuperidXMLRuleLoader {
     private final Set<RuleConfig> rules;
     private final Map<String, RuleAlgorithm> functions;
 
-    public SuperidXMLRuleLoader(String ruleFile, String serversFile) {
+    public ServersXMLRuleLoader(String ruleFile, String serversFile) {
         this.rules = new HashSet<RuleConfig>();
         this.tableRules = new HashMap<String, TableRuleConfig>();
         this.functions = new HashMap<String, RuleAlgorithm>();
@@ -64,7 +64,7 @@ public class SuperidXMLRuleLoader {
                 DEFAULT_SERVERS_DTD, serversFile == null ? DEFAULT_SERVERS_XML : serversFile);
     }
 
-    public SuperidXMLRuleLoader() {
+    public ServersXMLRuleLoader() {
         this(null, null);
     }
 
