@@ -168,7 +168,7 @@ cobar-with-id-node-mapping
 各位内容如下：
  * time: [0,3] 当前时间戳
  * inc: [4,6] 一个在[0,2^24)之间不断循环的数字
- * pid: [7,8]  当前id generator的进程号。 因为没有记录id generator的machineId，所以不同id generator实例最好有不同的pid，即使在不同的机器上.        
+ * gid: [7,8] generator的id，由id-generator manager在创建各个generator子进程时进行分配，保证每一个generator子进程分配的id不同
  * machineId: [9,11] 在本系统中是serverId
 
 例如:
